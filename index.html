@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Marek or Not</title>
+  <style>
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0a;
+      --surface: #111111;
+      --surface2: #1a1a1a;
+      --border: #2a2a2a;
+      --text: #e8e8e8;
+      --text-muted: #666;
+      --green: #00e676;
+      --green-dim: #00e67622;
+      --red: #ff1744;
+      --red-dim: #ff174422;
+      --amber: #ffc107;
+      --amber-dim: #ffc10722;
+      --blue: #448aff;
+      --glow-green: 0 0 30px #00e67655, 0 0 60px #00e67633;
+      --glow-red: 0 0 30px #ff174455, 0 0 60px #ff174433;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ── Screens ── */
+    .screen {
+      display: none;
+      width: 100%;
+      max-width: 520px;
+      padding: 24px 20px;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .screen.active { display: flex; }
+
+    /* ── Gate Screen ── */
+    #gate-screen {
+      justify-content: center;
+      gap: 24px;
+    }
+    .gate-logo {
+      font-size: 3rem;
+      font-weight: 900;
+      letter-spacing: -2px;
+      text-align: center;
+      line-height: 1;
+    }
+    .gate-logo span { color: var(--green); }
+    .gate-sub {
+      color: var(--text-muted);
+      text-align: center;
+      font-size: 0.9rem;
+    }
+    .gate-form {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .gate-input {
+      width: 100%;
+      padding: 14px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 1rem;
+      text-align: center;
+      letter-spacing: 3px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .gate-input:focus { border-color: var(--green); }
+    .gate-error {
+      color: var(--red);
+      font-size: 0.85rem;
+      text-align: center;
+      min-height: 20px;
+    }
+
+    /* ── Buttons ── */
+    .btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+      letter-spacing: 0.5px;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-primary { background: var(--green); color: #000; }
+    .btn-secondary {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-danger { background: var(--red); color: #fff; }
+    .btn-sm {
+      width: auto;
+      padding: 8px 14px;
+      font-size: 0.82rem;
+      border-radius: 7px;
+    }
+
+    /* ── Main Screen ── */
+    #main-screen { gap: 20px; }
+
+    .app-header {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 4px;
+    }
+    .app-title {
+      font-size: 1.4rem;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+    }
+    .app-title span { color: var(--green); }
+
+    /* ── Upload Zone ── */
+    #drop-zone {
+      width: 100%;
+      border: 2px dashed var(--border);
+      border-radius: 16px;
+      background: var(--surface);
+      min-height: 220px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+    #drop-zone.dragover {
+      border-color: var(--green);
+      background: var(--green-dim);
+    }
+    #drop-zone.has-preview { border-style: solid; border-color: var(--border); }
+    .drop-icon { font-size: 2.5rem; opacity: 0.5; }
+    .drop-text { color: var(--text-muted); font-size: 0.9rem; text-align: center; padding: 0 16px; }
+
+    #preview-img {
+      display: none;
+      width: 100%;
+      height: 100%;
+      max-height: 320px;
+      object-fit: contain;
+      border-radius: 14px;
+    }
+    #preview-img.visible { display: block; }
+
+    .upload-btn-row {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    /* ── Spinner ── */
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 3px solid var(--border);
+      border-top-color: var(--green);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .analyzing-box {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+    .analyzing-text { color: var(--text-muted); font-size: 0.9rem; }
+
+    /* ── Result Box ── */
+    .result-box {
+      width: 100%;
+      background: var(--surface);
+      border-radius: 16px;
+      padding: 28px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.85); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    .result-box.is-marek {
+      border: 1px solid var(--green);
+      box-shadow: var(--glow-green);
+    }
+    .result-box.not-marek {
+      border: 1px solid var(--red);
+      box-shadow: var(--glow-red);
+    }
+
+    .verdict-text {
+      font-size: 2.6rem;
+      font-weight: 900;
+      letter-spacing: -1px;
+      text-align: center;
+      line-height: 1;
+    }
+    .verdict-text.is-marek { color: var(--green); }
+    .verdict-text.not-marek { color: var(--red); }
+
+    /* ── Marekness Score Meter ── */
+    .score-section {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .score-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+    .score-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+    .score-number { font-size: 1.6rem; font-weight: 900; }
+    .score-bar-track {
+      width: 100%;
+      height: 12px;
+      background: var(--surface2);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .score-bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      width: 0%;
+      transition: width 1s cubic-bezier(0.34, 1.1, 0.64, 1);
+    }
+
+    /* score color helpers — set via JS */
+    .score-bar-fill.high  { background: var(--green); }
+    .score-bar-fill.mid   { background: var(--amber); }
+    .score-bar-fill.low   { background: var(--red); }
+    .score-number.high    { color: var(--green); }
+    .score-number.mid     { color: var(--amber); }
+    .score-number.low     { color: var(--red); }
+
+    .result-reason {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      text-align: center;
+      line-height: 1.5;
+      font-style: italic;
+    }
+
+    /* ── Confidence Badge ── */
+    .confidence-badge {
+      padding: 4px 12px;
+      border-radius: 99px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .confidence-badge.high   { background: var(--green-dim); color: var(--green); }
+    .confidence-badge.medium { background: var(--amber-dim); color: var(--amber); }
+    .confidence-badge.low    { background: var(--red-dim);   color: var(--red); }
+
+    /* ── Accuracy Stats ── */
+    .stats-row {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 14px 16px;
+      background: var(--surface2);
+      border-radius: 12px;
+    }
+    .stats-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); }
+    .stats-text { font-size: 0.82rem; color: var(--text-muted); }
+
+    /* ── Feedback row ── */
+    .feedback-row {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    .feedback-row .btn-sm { flex-shrink: 0; }
+
+    /* ── Admin Panel ── */
+    #admin-screen { gap: 20px; }
+
+    .admin-header {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .admin-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+
+    .admin-section {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .admin-section h3 {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+    }
+
+    .photo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 10px;
+    }
+    .photo-thumb {
+      position: relative;
+      aspect-ratio: 1;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .photo-thumb img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
+    .thumb-delete {
+      position: absolute;
+      top: 4px; right: 4px;
+      background: rgba(0,0,0,0.7);
+      border: none;
+      color: var(--red);
+      border-radius: 50%;
+      width: 22px; height: 22px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+    }
+
+    .verdict-log {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+    .verdict-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      background: var(--surface2);
+      border-radius: 8px;
+      font-size: 0.82rem;
+    }
+    .verdict-row .tag {
+      font-weight: 700;
+      font-size: 0.75rem;
+      padding: 2px 8px;
+      border-radius: 99px;
+    }
+    .tag.marek { background: var(--green-dim); color: var(--green); }
+    .tag.not   { background: var(--red-dim);   color: var(--red); }
+    .verdict-row .score-chip { margin-left: auto; color: var(--text-muted); }
+
+    /* ── Admin notice ── */
+    .admin-link {
+      margin-top: auto;
+      padding: 16px 0 4px;
+      color: var(--surface2);
+      font-size: 0.7rem;
+      cursor: pointer;
+      user-select: none;
+      transition: color 0.3s;
+    }
+    .admin-link:hover { color: var(--text-muted); }
+
+    /* ── Misc ── */
+    .divider { width: 100%; height: 1px; background: var(--border); }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════
+     GATE SCREEN
+════════════════════════════════════ -->
+<section id="gate-screen" class="screen active">
+  <div class="gate-logo">MAREK<br><span>OR NOT</span></div>
+  <p class="gate-sub">For friends only</p>
+  <div class="gate-form">
+    <input
+      id="gate-input"
+      class="gate-input"
+      type="password"
+      placeholder="Password"
+      autocomplete="current-password"
+    />
+    <p id="gate-error" class="gate-error"></p>
+    <button class="btn btn-primary" onclick="checkGate()">Enter</button>
+  </div>
+  <p class="admin-link" id="admin-link" onclick="openAdmin()">admin</p>
+</section>
+
+<!-- ════════════════════════════════════
+     MAIN SCREEN
+════════════════════════════════════ -->
+<section id="main-screen" class="screen">
+  <div class="app-header">
+    <div class="app-title">MAREK <span>OR NOT</span></div>
+  </div>
+
+  <!-- Drop Zone -->
+  <div id="drop-zone" onclick="triggerFileInput()">
+    <img id="preview-img" alt="Preview" />
+    <div id="drop-hint">
+      <div class="drop-icon">📸</div>
+      <p class="drop-text">Drop a photo here, or use the buttons below</p>
+    </div>
+  </div>
+
+  <!-- Upload buttons -->
+  <div class="upload-btn-row" id="upload-btns">
+    <button class="btn btn-secondary" onclick="triggerFileInput()">Upload Photo</button>
+    <button class="btn btn-secondary" onclick="triggerCamera()">Take Photo</button>
+  </div>
+
+  <!-- Hidden inputs -->
+  <input id="file-input"   type="file" accept="image/*" class="hidden" onchange="handleFile(this.files[0])" />
+  <input id="camera-input" type="file" accept="image/*" capture="environment" class="hidden" onchange="handleFile(this.files[0])" />
+
+  <!-- Analyzing state -->
+  <div id="analyzing-box" class="analyzing-box hidden">
+    <div class="spinner"></div>
+    <p class="analyzing-text">Consulting the Marek oracle…</p>
+  </div>
+
+  <!-- Result state -->
+  <div id="result-box" class="result-box hidden">
+    <div id="verdict-text" class="verdict-text"></div>
+
+    <div class="score-section">
+      <div class="score-label-row">
+        <span class="score-label">Marekness Score</span>
+        <span id="score-number" class="score-number"></span>
+      </div>
+      <div class="score-bar-track">
+        <div id="score-bar" class="score-bar-fill"></div>
+      </div>
+    </div>
+
+    <p id="result-reason" class="result-reason"></p>
+
+    <div style="display:flex; gap:10px; align-items:center;">
+      <span id="confidence-badge" class="confidence-badge"></span>
+    </div>
+
+    <!-- Feedback -->
+    <div class="feedback-row">
+      <span>Was this right?</span>
+      <button class="btn btn-sm btn-secondary" onclick="flagVerdict(true)">Yes ✓</button>
+      <button class="btn btn-sm btn-secondary" onclick="flagVerdict(false)">No ✗</button>
+      <span id="feedback-thanks" class="hidden" style="color:var(--green);font-size:0.82rem;">Thanks!</span>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Accuracy stats -->
+    <div class="stats-row">
+      <span class="stats-title">Community Stats</span>
+      <span id="stats-text" class="stats-text">Loading…</span>
+    </div>
+
+    <button class="btn btn-secondary" onclick="resetMain()">Check Another Photo</button>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════
+     ADMIN SCREEN
+════════════════════════════════════ -->
+<section id="admin-screen" class="screen">
+  <div class="admin-header">
+    <div class="admin-title">Admin Panel</div>
+    <button class="btn btn-secondary btn-sm" onclick="showScreen('main-screen')">← Back</button>
+  </div>
+
+  <!-- Upload reference photo -->
+  <div class="admin-section">
+    <h3>Reference Photos</h3>
+    <input id="admin-file-input" type="file" accept="image/*" class="hidden" onchange="adminHandleFile(this.files[0])" />
+    <button class="btn btn-secondary" onclick="document.getElementById('admin-file-input').click()">
+      + Upload Reference Photo
+    </button>
+    <p id="admin-upload-status" class="gate-error" style="color:var(--text-muted)"></p>
+    <div id="photo-grid" class="photo-grid"></div>
+  </div>
+
+  <!-- Verdict log -->
+  <div class="admin-section">
+    <h3>Verdict Log</h3>
+    <div id="verdict-log" class="verdict-log">
+      <p style="color:var(--text-muted);font-size:0.85rem;">Loading…</p>
+    </div>
+  </div>
+</section>
+
+<script>
+// ─────────────────────────────────────
+// CONFIG — replace these values
+// ─────────────────────────────────────
+const GATE_PASSWORD  = "happybirthdaymar3k!";
+const SUPABASE_URL   = "https://feskdeuuuhrbordnrypv.supabase.co";
+const SUPABASE_ANON  = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZlc2tkZXV1dWhyYm9yZG5yeXB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5MTY1ODMsImV4cCI6MjA4ODQ5MjU4M30.Tj0uOpyzH1sZ3AwJ5CcOZJuEwhG9ktUfWrbZBDVVO44";
+
+// ─────────────────────────────────────
+// SCREEN MANAGEMENT
+// ─────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+
+// ─────────────────────────────────────
+// GATE
+// ─────────────────────────────────────
+(function initGate() {
+  if (sessionStorage.getItem("marek_auth") === "1") showScreen("main-screen");
+  document.getElementById("gate-input").addEventListener("keydown", e => {
+    if (e.key === "Enter") checkGate();
+  });
+})();
+
+function checkGate() {
+  const val = document.getElementById("gate-input").value.trim();
+  if (val === GATE_PASSWORD) {
+    sessionStorage.setItem("marek_auth", "1");
+    showScreen("main-screen");
+  } else {
+    const el = document.getElementById("gate-error");
+    el.textContent = "Wrong password. Nice try.";
+    setTimeout(() => el.textContent = "", 2500);
+  }
+}
+
+function openAdmin() {
+  const pw = prompt("Admin password:");
+  if (!pw) return;
+  sessionStorage.setItem("marek_admin_pw", pw);
+  sessionStorage.setItem("marek_auth", "1");
+  showScreen("admin-screen");
+  loadAdminData();
+}
+
+// ─────────────────────────────────────
+// DROP ZONE
+// ─────────────────────────────────────
+const dropZone = document.getElementById("drop-zone");
+
+dropZone.addEventListener("dragover", e => {
+  e.preventDefault();
+  dropZone.classList.add("dragover");
+});
+dropZone.addEventListener("dragleave", () => dropZone.classList.remove("dragover"));
+dropZone.addEventListener("drop", e => {
+  e.preventDefault();
+  dropZone.classList.remove("dragover");
+  const file = e.dataTransfer.files[0];
+  if (file) handleFile(file);
+});
+
+function triggerFileInput()   { document.getElementById("file-input").click(); }
+function triggerCamera()      { document.getElementById("camera-input").click(); }
+
+// ─────────────────────────────────────
+// FILE HANDLING & STATE MACHINE
+// ─────────────────────────────────────
+let currentBase64 = null;
+let currentMediaType = null;
+
+function handleFile(file) {
+  if (!file || !file.type.startsWith("image/")) return;
+  currentMediaType = file.type;
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    const dataUrl = e.target.result;
+    // Strip data:image/xxx;base64, prefix
+    currentBase64 = dataUrl.split(",")[1];
+
+    // Show preview
+    const img = document.getElementById("preview-img");
+    img.src = dataUrl;
+    img.classList.add("visible");
+    document.getElementById("drop-hint").classList.add("hidden");
+    dropZone.classList.add("has-preview");
+
+    // Hide previous results
+    document.getElementById("result-box").classList.add("hidden");
+    document.getElementById("analyzing-box").classList.add("hidden");
+
+    // Auto-analyze
+    analyzePhoto();
+  };
+  reader.readAsDataURL(file);
+}
+
+async function analyzePhoto() {
+  if (!currentBase64) return;
+
+  // Switch to analyzing state
+  document.getElementById("upload-btns").classList.add("hidden");
+  document.getElementById("analyzing-box").classList.remove("hidden");
+  document.getElementById("result-box").classList.add("hidden");
+  document.getElementById("feedback-thanks").classList.add("hidden");
+
+  try {
+    const res = await fetch("/.netlify/functions/identify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ imageBase64: currentBase64, mediaType: currentMediaType }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || data.error) {
+      throw new Error(data.error || "Unknown error");
+    }
+
+    showResult(data);
+  } catch (err) {
+    document.getElementById("analyzing-box").classList.add("hidden");
+    document.getElementById("upload-btns").classList.remove("hidden");
+    alert("Error: " + err.message);
+  }
+}
+
+function showResult({ isMarek, marekscore, confidence, reason }) {
+  document.getElementById("analyzing-box").classList.add("hidden");
+
+  const box = document.getElementById("result-box");
+  box.className = "result-box " + (isMarek ? "is-marek" : "not-marek");
+
+  // Verdict text
+  const vt = document.getElementById("verdict-text");
+  vt.className = "verdict-text " + (isMarek ? "is-marek" : "not-marek");
+  vt.textContent = isMarek ? "MAREK ✓" : "NOT MAREK ✗";
+
+  // Score
+  const scoreClass = marekscore >= 70 ? "high" : marekscore >= 40 ? "mid" : "low";
+  const sn = document.getElementById("score-number");
+  sn.className = "score-number " + scoreClass;
+  sn.textContent = marekscore;
+
+  const bar = document.getElementById("score-bar");
+  bar.className = "score-bar-fill " + scoreClass;
+  // Animate on next frame
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => { bar.style.width = marekscore + "%"; });
+  });
+
+  // Reason
+  document.getElementById("result-reason").textContent = `"${reason}"`;
+
+  // Confidence badge
+  const badge = document.getElementById("confidence-badge");
+  badge.className = "confidence-badge " + confidence;
+  badge.textContent = confidence + " confidence";
+
+  box.classList.remove("hidden");
+
+  // Load stats
+  loadStats();
+}
+
+function resetMain() {
+  currentBase64 = null;
+  currentMediaType = null;
+
+  const img = document.getElementById("preview-img");
+  img.src = "";
+  img.classList.remove("visible");
+  document.getElementById("drop-hint").classList.remove("hidden");
+  dropZone.classList.remove("has-preview");
+
+  document.getElementById("result-box").classList.add("hidden");
+  document.getElementById("upload-btns").classList.remove("hidden");
+  document.getElementById("score-bar").style.width = "0%";
+}
+
+// ─────────────────────────────────────
+// ACCURACY STATS
+// ─────────────────────────────────────
+async function loadStats() {
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/marek_verdicts?select=is_marek,marekness_score`,
+      { headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` } }
+    );
+    if (!res.ok) throw new Error();
+    const rows = await res.json();
+
+    const total = rows.length;
+    const marekCount = rows.filter(r => r.is_marek).length;
+    const notMarekCount = total - marekCount;
+
+    document.getElementById("stats-text").textContent =
+      `${total} checks · ${marekCount} Marek · ${notMarekCount} not Marek`;
+  } catch {
+    document.getElementById("stats-text").textContent = "Stats unavailable";
+  }
+}
+
+// ─────────────────────────────────────
+// FEEDBACK FLAG
+// ─────────────────────────────────────
+async function flagVerdict(correct) {
+  // Just show thanks — could log to a corrections table in a future version
+  document.getElementById("feedback-thanks").classList.remove("hidden");
+}
+
+// ─────────────────────────────────────
+// ADMIN
+// ─────────────────────────────────────
+async function loadAdminData() {
+  await Promise.all([loadReferencePhotos(), loadVerdictLog()]);
+}
+
+async function loadReferencePhotos() {
+  const grid = document.getElementById("photo-grid");
+  grid.innerHTML = "";
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/marek_photos?select=id,url,filename&order=created_at.desc`,
+      { headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` } }
+    );
+    const rows = await res.json();
+    if (!rows.length) {
+      grid.innerHTML = `<p style="color:var(--text-muted);font-size:0.85rem;">No reference photos yet.</p>`;
+      return;
+    }
+    rows.forEach(r => {
+      const div = document.createElement("div");
+      div.className = "photo-thumb";
+      div.innerHTML = `
+        <img src="${r.url}" alt="${r.filename || ''}" loading="lazy" />
+        <button class="thumb-delete" onclick="deletePhoto('${r.id}', this)" title="Delete">✕</button>
+      `;
+      grid.appendChild(div);
+    });
+  } catch {
+    grid.innerHTML = `<p style="color:var(--red);font-size:0.85rem;">Failed to load photos.</p>`;
+  }
+}
+
+async function deletePhoto(id, btn) {
+  if (!confirm("Delete this reference photo?")) return;
+  btn.disabled = true;
+  try {
+    const pw = sessionStorage.getItem("marek_admin_pw");
+    // Delete from DB — admin-authenticated via service key on backend isn't implemented for delete,
+    // so we call a simple Supabase REST delete using the anon key (RLS is disabled per plan).
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/marek_photos?id=eq.${id}`, {
+      method: "DELETE",
+      headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` },
+    });
+    if (res.ok) btn.closest(".photo-thumb").remove();
+    else throw new Error();
+  } catch {
+    alert("Delete failed.");
+    btn.disabled = false;
+  }
+}
+
+async function loadVerdictLog() {
+  const log = document.getElementById("verdict-log");
+  log.innerHTML = "";
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/marek_verdicts?select=is_marek,marekness_score,confidence,created_at&order=created_at.desc&limit=50`,
+      { headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` } }
+    );
+    const rows = await res.json();
+    if (!rows.length) {
+      log.innerHTML = `<p style="color:var(--text-muted);font-size:0.85rem;">No verdicts yet.</p>`;
+      return;
+    }
+    rows.forEach(r => {
+      const div = document.createElement("div");
+      div.className = "verdict-row";
+      const d = new Date(r.created_at);
+      const ts = d.toLocaleDateString() + " " + d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      div.innerHTML = `
+        <span class="tag ${r.is_marek ? "marek" : "not"}">${r.is_marek ? "MAREK" : "NOT"}</span>
+        <span style="color:var(--text-muted)">${ts}</span>
+        <span style="font-size:0.75rem;color:var(--text-muted)">${r.confidence}</span>
+        <span class="score-chip">${r.marekness_score}/100</span>
+      `;
+      log.appendChild(div);
+    });
+  } catch {
+    log.innerHTML = `<p style="color:var(--red);font-size:0.85rem;">Failed to load log.</p>`;
+  }
+}
+
+async function adminHandleFile(file) {
+  if (!file) return;
+  const status = document.getElementById("admin-upload-status");
+  status.style.color = "var(--text-muted)";
+  status.textContent = "Uploading…";
+
+  const reader = new FileReader();
+  reader.onload = async e => {
+    const dataUrl = e.target.result;
+    const base64 = dataUrl.split(",")[1];
+    const mediaType = file.type;
+    const adminPassword = sessionStorage.getItem("marek_admin_pw") || prompt("Admin password:");
+
+    try {
+      const res = await fetch("/.netlify/functions/upload-reference", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ adminPassword, imageBase64: base64, mediaType, filename: file.name }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) throw new Error(data.error || "Upload failed");
+
+      status.style.color = "var(--green)";
+      status.textContent = "Uploaded successfully!";
+      loadReferencePhotos();
+    } catch (err) {
+      status.style.color = "var(--red)";
+      status.textContent = "Error: " + err.message;
+    }
+  };
+  reader.readAsDataURL(file);
+}
+</script>
+</body>
+</html>
