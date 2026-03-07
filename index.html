@@ -630,9 +630,9 @@
   <div class="admin-section">
     <h3>Decoration Photos</h3>
     <p style="font-size:0.8rem;color:var(--text-muted);">These appear as scattered polaroids on the login screen.</p>
-    <input id="admin-decor-input" type="file" accept="image/*" class="hidden" onchange="adminHandleDecorFile(this.files[0])" />
+    <input id="admin-decor-input" type="file" accept="image/*" multiple class="hidden" onchange="adminHandleDecorFiles(this.files)" />
     <button class="btn btn-secondary" onclick="document.getElementById('admin-decor-input').click()">
-      + Upload Decoration Photo
+      + Upload Decoration Photos
     </button>
     <p id="admin-decor-status" class="gate-error" style="color:var(--text-muted)"></p>
     <div id="decor-grid" class="photo-grid"></div>
@@ -1027,87 +1027,69 @@ async function deleteDecorPhoto(id, btn) {
   }
 }
 
-async function adminHandleDecorFile(file) {
-  if (!file) return;
+async function adminHandleDecorFiles(files) {
+  if (!files || !files.length) return;
   const status = document.getElementById("admin-decor-status");
-  status.style.color = "var(--text-muted)";
-  status.textContent = "Converting…";
+  const adminPassword = sessionStorage.getItem("marek_admin_pw") || prompt("Admin password:");
+  const total = files.length;
+  let done = 0, failed = 0;
 
-  const reader = new FileReader();
-  reader.onload = async e => {
-    const dataUrl = e.target.result;
-    const toJpeg = () => new Promise((resolve, reject) => {
-      const img = new Image();
-      img.onload = () => {
+  const toJpeg = (file) => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const tempImg = new Image();
+      tempImg.onload = () => {
         const MAX = 1600;
-        let w = img.naturalWidth, h = img.naturalHeight;
+        let w = tempImg.naturalWidth, h = tempImg.naturalHeight;
         if (w > MAX || h > MAX) {
           const scale = MAX / Math.max(w, h);
           w = Math.round(w * scale); h = Math.round(h * scale);
         }
         const canvas = document.createElement("canvas");
         canvas.width = w; canvas.height = h;
-        canvas.getContext("2d").drawImage(img, 0, 0, w, h);
-        resolve(canvas.toDataURL("image/jpeg", 0.9));
+        canvas.getContext("2d").drawImage(tempImg, 0, 0, w, h);
+        resolve({ base64: canvas.toDataURL("image/jpeg", 0.9).split(",")[1], filename: file.name });
       };
-      img.onerror = reject;
-      img.src = dataUrl;
-    });
+      tempImg.onerror = reject;
+      tempImg.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
 
-    let base64, mediaType;
-    try {
-      const jpegDataUrl = await toJpeg();
-      base64 = jpegDataUrl.split(",")[1];
-      mediaType = "image/jpeg";
-    } catch {
-      status.style.color = "var(--red)";
-      status.textContent = "HEIC not supported in this browser — convert to JPEG first, then re-upload.";
-      return;
-    }
-
-    status.textContent = "Uploading…";
-    const adminPassword = sessionStorage.getItem("marek_admin_pw") || prompt("Admin password:");
-    const filename = file.name.replace(/\.[^.]+$/, "") + ".jpg";
+  for (const file of Array.from(files)) {
+    status.style.color = "var(--text-muted)";
+    status.textContent = `Uploading ${done + failed + 1} of ${total}…`;
 
     try {
-      // Upload to Supabase Storage under decor/ prefix
-      const safeName = `decor/${Date.now()}-${filename.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
-      const uploadRes = await fetch(
-        `${SUPABASE_URL}/storage/v1/object/marek-reference/${safeName}`,
-        {
-          method: "POST",
-          headers: {
-            apikey: SUPABASE_ANON,
-            Authorization: `Bearer ${SUPABASE_ANON}`,
-            "Content-Type": mediaType,
-          },
-          body: Uint8Array.from(atob(base64), c => c.charCodeAt(0)),
-        }
-      );
-      if (!uploadRes.ok) throw new Error("Storage upload failed");
-
-      const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/marek-reference/${safeName}`;
-      const insertRes = await fetch(`${SUPABASE_URL}/rest/v1/marek_decor_photos`, {
+      const { base64, filename } = await toJpeg(file);
+      const res = await fetch("/.netlify/functions/upload-decor", {
         method: "POST",
-        headers: {
-          apikey: SUPABASE_ANON,
-          Authorization: `Bearer ${SUPABASE_ANON}`,
-          "Content-Type": "application/json",
-          Prefer: "return=minimal",
-        },
-        body: JSON.stringify({ url: publicUrl, filename }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          adminPassword,
+          imageBase64: base64,
+          mediaType: "image/jpeg",
+          filename: filename.replace(/\.[^.]+$/, "") + ".jpg",
+        }),
       });
-      if (!insertRes.ok) throw new Error("DB insert failed");
-
-      status.style.color = "var(--green)";
-      status.textContent = "Uploaded successfully!";
-      loadDecorPhotos();
+      const data = await res.json();
+      if (!res.ok || data.error) throw new Error(data.error);
+      done++;
     } catch (err) {
-      status.style.color = "var(--red)";
-      status.textContent = "Error: " + err.message;
+      console.error(err);
+      failed++;
     }
-  };
-  reader.readAsDataURL(file);
+  }
+
+  if (failed === 0) {
+    status.style.color = "var(--green)";
+    status.textContent = `${done} photo${done !== 1 ? "s" : ""} uploaded successfully!`;
+  } else {
+    status.style.color = "var(--amber)";
+    status.textContent = `${done} uploaded, ${failed} failed (HEIC files need manual conversion to JPEG first).`;
+  }
+  loadDecorPhotos();
 }
 
 async function loadVerdictLog() {
