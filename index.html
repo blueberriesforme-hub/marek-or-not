@@ -632,34 +632,43 @@ function handleFile(file) {
   reader.onload = e => {
     const dataUrl = e.target.result;
 
-    // Convert to JPEG via canvas (handles HEIC and other formats Claude doesn't accept)
-    const tempImg = new Image();
-    tempImg.onload = () => {
-      const canvas = document.createElement("canvas");
-      canvas.width = tempImg.naturalWidth;
-      canvas.height = tempImg.naturalHeight;
-      canvas.getContext("2d").drawImage(tempImg, 0, 0);
-      const jpegDataUrl = canvas.toDataURL("image/jpeg", 0.92);
-      currentBase64 = jpegDataUrl.split(",")[1];
-      currentMediaType = "image/jpeg";
-
-      // Show preview
-      const previewImg = document.getElementById("preview-img");
-      previewImg.src = jpegDataUrl;
-      previewImg.classList.add("visible");
-      document.getElementById("drop-hint").classList.add("hidden");
-      dropZone.classList.add("has-preview");
-
-      // Hide previous results
-      document.getElementById("result-box").classList.add("hidden");
-      document.getElementById("analyzing-box").classList.add("hidden");
-
-      // Auto-analyze
-      analyzePhoto();
-    };
-    tempImg.src = dataUrl;
+    const supported = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+    if (supported.includes(file.type)) {
+      // Already a supported format — use directly
+      currentBase64 = dataUrl.split(",")[1];
+      currentMediaType = file.type;
+      showPreviewAndAnalyze(dataUrl);
+    } else {
+      // Try canvas conversion (works for HEIC on Safari)
+      const tempImg = new Image();
+      tempImg.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = tempImg.naturalWidth;
+        canvas.height = tempImg.naturalHeight;
+        canvas.getContext("2d").drawImage(tempImg, 0, 0);
+        const jpegDataUrl = canvas.toDataURL("image/jpeg", 0.92);
+        currentBase64 = jpegDataUrl.split(",")[1];
+        currentMediaType = "image/jpeg";
+        showPreviewAndAnalyze(jpegDataUrl);
+      };
+      tempImg.onerror = () => {
+        alert("This photo format isn't supported. Please convert it to JPEG first, or take a photo directly using the Take Photo button.");
+      };
+      tempImg.src = dataUrl;
+    }
   };
   reader.readAsDataURL(file);
+}
+
+function showPreviewAndAnalyze(dataUrl) {
+  const previewImg = document.getElementById("preview-img");
+  previewImg.src = dataUrl;
+  previewImg.classList.add("visible");
+  document.getElementById("drop-hint").classList.add("hidden");
+  dropZone.classList.add("has-preview");
+  document.getElementById("result-box").classList.add("hidden");
+  document.getElementById("analyzing-box").classList.add("hidden");
+  analyzePhoto();
 }
 
 async function analyzePhoto() {
