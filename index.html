@@ -631,31 +631,30 @@ function handleFile(file) {
   const reader = new FileReader();
   reader.onload = e => {
     const dataUrl = e.target.result;
-
-    const supported = ["image/jpeg", "image/png", "image/gif", "image/webp"];
-    if (supported.includes(file.type)) {
-      // Already a supported format — use directly
-      currentBase64 = dataUrl.split(",")[1];
-      currentMediaType = file.type;
-      showPreviewAndAnalyze(dataUrl);
-    } else {
-      // Try canvas conversion (works for HEIC on Safari)
-      const tempImg = new Image();
-      tempImg.onload = () => {
-        const canvas = document.createElement("canvas");
-        canvas.width = tempImg.naturalWidth;
-        canvas.height = tempImg.naturalHeight;
-        canvas.getContext("2d").drawImage(tempImg, 0, 0);
-        const jpegDataUrl = canvas.toDataURL("image/jpeg", 0.92);
-        currentBase64 = jpegDataUrl.split(",")[1];
-        currentMediaType = "image/jpeg";
-        showPreviewAndAnalyze(jpegDataUrl);
-      };
-      tempImg.onerror = () => {
-        alert("This photo format isn't supported. Please convert it to JPEG first, or take a photo directly using the Take Photo button.");
-      };
-      tempImg.src = dataUrl;
-    }
+    const tempImg = new Image();
+    tempImg.onload = () => {
+      // Always convert to JPEG via canvas, max 1600px on longest side
+      const MAX = 1600;
+      let w = tempImg.naturalWidth;
+      let h = tempImg.naturalHeight;
+      if (w > MAX || h > MAX) {
+        const scale = MAX / Math.max(w, h);
+        w = Math.round(w * scale);
+        h = Math.round(h * scale);
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      canvas.getContext("2d").drawImage(tempImg, 0, 0, w, h);
+      const jpegDataUrl = canvas.toDataURL("image/jpeg", 0.9);
+      currentBase64 = jpegDataUrl.split(",")[1];
+      currentMediaType = "image/jpeg";
+      showPreviewAndAnalyze(jpegDataUrl);
+    };
+    tempImg.onerror = () => {
+      alert("This photo format isn't supported in your browser. Please convert to JPEG first, or try the Take Photo button.");
+    };
+    tempImg.src = dataUrl;
   };
   reader.readAsDataURL(file);
 }
