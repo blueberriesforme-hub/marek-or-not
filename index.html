@@ -627,27 +627,37 @@ let currentMediaType = null;
 
 function handleFile(file) {
   if (!file || !file.type.startsWith("image/")) return;
-  currentMediaType = file.type;
 
   const reader = new FileReader();
   reader.onload = e => {
     const dataUrl = e.target.result;
-    // Strip data:image/xxx;base64, prefix
-    currentBase64 = dataUrl.split(",")[1];
 
-    // Show preview
-    const img = document.getElementById("preview-img");
-    img.src = dataUrl;
-    img.classList.add("visible");
-    document.getElementById("drop-hint").classList.add("hidden");
-    dropZone.classList.add("has-preview");
+    // Convert to JPEG via canvas (handles HEIC and other formats Claude doesn't accept)
+    const tempImg = new Image();
+    tempImg.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = tempImg.naturalWidth;
+      canvas.height = tempImg.naturalHeight;
+      canvas.getContext("2d").drawImage(tempImg, 0, 0);
+      const jpegDataUrl = canvas.toDataURL("image/jpeg", 0.92);
+      currentBase64 = jpegDataUrl.split(",")[1];
+      currentMediaType = "image/jpeg";
 
-    // Hide previous results
-    document.getElementById("result-box").classList.add("hidden");
-    document.getElementById("analyzing-box").classList.add("hidden");
+      // Show preview
+      const previewImg = document.getElementById("preview-img");
+      previewImg.src = jpegDataUrl;
+      previewImg.classList.add("visible");
+      document.getElementById("drop-hint").classList.add("hidden");
+      dropZone.classList.add("has-preview");
 
-    // Auto-analyze
-    analyzePhoto();
+      // Hide previous results
+      document.getElementById("result-box").classList.add("hidden");
+      document.getElementById("analyzing-box").classList.add("hidden");
+
+      // Auto-analyze
+      analyzePhoto();
+    };
+    tempImg.src = dataUrl;
   };
   reader.readAsDataURL(file);
 }
