@@ -229,25 +229,19 @@
     /* ── Upload Zone ── */
     #drop-zone {
       width: 100%;
-      border: 1.5px dashed var(--border);
+      border: 1.5px solid var(--border);
       border-radius: 8px;
       background: var(--surface);
       min-height: 210px;
-      display: flex;
+      display: none;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       gap: 10px;
-      cursor: pointer;
-      transition: border-color 0.2s, background 0.2s;
       position: relative;
       overflow: hidden;
     }
-    #drop-zone.dragover {
-      border-color: var(--ink);
-      background: var(--surface2);
-    }
-    #drop-zone.has-preview { border-style: solid; }
+    #drop-zone.has-preview { display: flex; }
     .drop-icon { font-size: 2rem; opacity: 0.35; }
     .drop-text { color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 0 16px; }
 
@@ -265,7 +259,7 @@
     .upload-tiles {
       width: 100%;
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(3, 1fr);
       gap: 10px;
     }
     .upload-tile {
@@ -288,6 +282,12 @@
       box-shadow: 0 6px 16px rgba(0,0,0,0.07);
     }
     .upload-tile:active { transform: scale(0.97); box-shadow: none; }
+    .upload-tile.dragover {
+      border-color: var(--ink);
+      background: var(--surface2);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.07);
+    }
     .upload-tile-icon { font-size: 1.8rem; line-height: 1; }
     .upload-tile-label { font-size: 0.88rem; font-weight: 600; color: var(--text); }
     .upload-tile-sub { font-size: 0.7rem; color: var(--text-muted); }
@@ -791,17 +791,21 @@
 
   <!-- Upload tiles -->
   <div id="upload-btns">
-    <div class="upload-or"><span>or</span></div>
     <div class="upload-tiles">
       <button class="upload-tile" onclick="triggerFileInput()">
         <span class="upload-tile-icon">🖼️</span>
         <span class="upload-tile-label">Upload</span>
-        <span class="upload-tile-sub">from camera roll</span>
+        <span class="upload-tile-sub">camera roll</span>
       </button>
       <button class="upload-tile" onclick="triggerCamera()">
         <span class="upload-tile-icon">📷</span>
         <span class="upload-tile-label">Take Photo</span>
-        <span class="upload-tile-sub">use your camera</span>
+        <span class="upload-tile-sub">use camera</span>
+      </button>
+      <button class="upload-tile" id="drag-tile" onclick="triggerFileInput()">
+        <span class="upload-tile-icon">🗂️</span>
+        <span class="upload-tile-label">Drag & Drop</span>
+        <span class="upload-tile-sub">drop here</span>
       </button>
     </div>
   </div>
@@ -1081,15 +1085,16 @@ function openAdmin() {
 // DROP ZONE
 // ─────────────────────────────────────
 const dropZone = document.getElementById("drop-zone");
+const dragTile = document.getElementById("drag-tile");
 
-dropZone.addEventListener("dragover", e => {
+dragTile.addEventListener("dragover", e => {
   e.preventDefault();
-  dropZone.classList.add("dragover");
+  dragTile.classList.add("dragover");
 });
-dropZone.addEventListener("dragleave", () => dropZone.classList.remove("dragover"));
-dropZone.addEventListener("drop", e => {
+dragTile.addEventListener("dragleave", () => dragTile.classList.remove("dragover"));
+dragTile.addEventListener("drop", e => {
   e.preventDefault();
-  dropZone.classList.remove("dragover");
+  dragTile.classList.remove("dragover");
   const file = e.dataTransfer.files[0];
   if (file) handleFile(file);
 });
