@@ -58,11 +58,12 @@
 
     /* ── Scattered background photos (gate screen) ── */
     #photo-bg {
-      position: fixed;
-      inset: 0;
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100vh;
       pointer-events: none;
       z-index: 2;
-      overflow: hidden;
+      overflow: visible;
     }
     .bg-photo {
       position: absolute;
@@ -589,19 +590,18 @@
     }
     .soft-link {
       font-family: 'Inter', sans-serif;
-      font-size: 0.78rem;
+      font-size: 0.8rem;
       color: var(--text-muted);
       background: none;
       border: none;
       padding: 4px 6px;
       cursor: pointer;
-      opacity: 0.6;
-      transition: opacity 0.2s;
       text-decoration: underline;
       text-underline-offset: 3px;
-      text-decoration-color: transparent;
+      text-decoration-color: var(--border);
+      transition: color 0.2s, text-decoration-color 0.2s;
     }
-    .soft-link:hover { opacity: 1; text-decoration-color: currentColor; }
+    .soft-link:hover { color: var(--text); text-decoration-color: var(--text); }
     .ws-back-btn {
       align-self: center;
       font-family: 'Inter', sans-serif;
@@ -783,7 +783,7 @@
 ════════════════════════════════════ -->
 <section id="gate-screen" class="screen active">
   <div class="gate-splash-title">Another year<br>of Marek.</div>
-  <p class="gate-splash-sub">✨ Happy 34th ✨</p>
+  <p class="gate-splash-sub">✨ Happy Birthday Marek ✨</p>
 </section>
 
 <!-- ════════════════════════════════════
@@ -1001,8 +1001,9 @@ async function loadScatteredPhotos() {
     const contentW = Math.min(520, vw);
     const sideMargin = (vw - contentW) / 2; // space on each side
     // Position so photos are fully in the margin when space allows, otherwise peek in
-    const leftPos  = Math.max(-30, sideMargin - photoW - 10);
-    const rightPos = Math.max(-30, sideMargin - photoW - 10);
+    // On mobile push photos mostly off-screen (only ~15px sliver visible at edges, never over content)
+    const leftPos  = vw < 600 ? -(photoW - 15) : Math.max(-30, sideMargin - photoW - 10);
+    const rightPos = vw < 600 ? -(photoW - 15) : Math.max(-30, sideMargin - photoW - 10);
 
     // Bottom slots listed first so mobile (count=2) shows bottom corners,
     // avoiding overlap with the title/tagline at the top of the screen.
