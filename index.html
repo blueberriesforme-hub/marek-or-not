@@ -47,7 +47,6 @@
       align-items: center;
       min-height: 100vh;
       position: relative;
-      z-index: 1;
     }
     .screen.active { display: flex; }
 
@@ -56,15 +55,15 @@
       position: fixed;
       inset: 0;
       pointer-events: none;
-      z-index: 0;
+      z-index: 2;
       overflow: hidden;
     }
     .bg-photo {
       position: absolute;
       background: #fff;
-      padding: 7px 7px 26px;
-      box-shadow: 0 6px 24px rgba(0,0,0,0.13), 0 1px 4px rgba(0,0,0,0.07);
-      width: 130px;
+      padding: 9px 9px 32px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.15), 0 2px 6px rgba(0,0,0,0.08);
+      width: 200px;
       opacity: 0;
       animation: fadeInPhoto 0.6s ease forwards;
     }
@@ -86,12 +85,13 @@
     }
     .gate-logo {
       font-family: 'Playfair Display', Georgia, serif;
-      font-size: 3.4rem;
+      font-size: clamp(2rem, 8vw, 3.2rem);
       font-weight: 900;
       letter-spacing: -1px;
       text-align: center;
       line-height: 1.05;
       color: var(--ink);
+      white-space: nowrap;
     }
     .gate-tagline {
       font-family: 'Playfair Display', Georgia, serif;
@@ -494,6 +494,155 @@
     }
     .admin-link:hover { color: var(--text); }
 
+    /* ── Who is Marek link ── */
+    .who-link {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-style: italic;
+      font-size: 0.88rem;
+      color: var(--ink);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 16px;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .who-link:hover { background: var(--surface2); border-color: var(--ink); }
+    .ws-back-btn {
+      align-self: center;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      color: #aab;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 6px;
+      padding: 8px 14px;
+      cursor: pointer;
+      transition: background 0.2s;
+      position: relative;
+      z-index: 3;
+      margin-top: 20px;
+    }
+    .ws-back-btn:hover { background: rgba(255,255,255,0.1); }
+
+    /* ── Word Search Screen ── */
+    #wordsearch-screen {
+      background: #06071a;
+      color: #dde;
+      max-width: 100%;
+      padding: 28px 16px 48px;
+      min-height: 100vh;
+      align-items: center;
+      gap: 24px;
+    }
+    .ws-header { text-align: center; }
+    .ws-title {
+      font-size: clamp(1.6rem, 5vw, 2.4rem);
+      font-weight: 800;
+      background: linear-gradient(135deg, #ffd700 0%, #ff9900 45%, #ff6b9d 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.2;
+      margin-bottom: 6px;
+    }
+    .ws-subtitle { color: #6678aa; font-size: 0.9rem; font-style: italic; }
+    .ws-layout {
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+      justify-content: center;
+      flex-wrap: wrap;
+      width: 100%;
+    }
+    .ws-panel {
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 16px;
+      padding: 20px;
+    }
+    #ws-grid {
+      display: grid;
+      grid-template-columns: repeat(16, 34px);
+      grid-template-rows: repeat(16, 34px);
+      gap: 1px;
+      user-select: none;
+      cursor: crosshair;
+    }
+    .ws-cell {
+      width: 34px; height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      border-radius: 4px;
+      color: #7788aa;
+      transition: color .15s;
+    }
+    .ws-cell.selecting {
+      background: rgba(80,160,255,.5) !important;
+      color: #fff !important;
+    }
+    .ws-word-panel { min-width: 200px; }
+    .ws-word-panel h3 {
+      font-size: .7rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: #556;
+      margin-bottom: 14px;
+    }
+    .ws-word-item {
+      font-size: .85rem;
+      padding: 4px 8px;
+      border-radius: 6px;
+      margin-bottom: 3px;
+      color: #ccd;
+      transition: all .3s;
+    }
+    .ws-word-item.found { text-decoration: line-through; color: #3d5c3d; }
+    .ws-progress-bar {
+      margin-top: 16px;
+      height: 4px;
+      background: rgba(255,255,255,.08);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .ws-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #4caf8a, #7ee8a2);
+      border-radius: 2px;
+      transition: width .4s ease;
+      width: 0%;
+    }
+    .ws-progress-text { margin-top: 8px; font-size: .75rem; color: #556; text-align: center; }
+    .ws-congrats {
+      display: none;
+      padding: 22px;
+      border-radius: 14px;
+      text-align: center;
+      background: rgba(255,215,0,.07);
+      border: 1px solid rgba(255,215,0,.2);
+      color: #ffd700;
+      font-size: 1.1rem;
+      animation: wsGlow 2.2s ease-in-out infinite;
+      width: 100%;
+      max-width: 600px;
+    }
+    @keyframes wsGlow {
+      0%, 100% { box-shadow: 0 0 20px rgba(255,215,0,.15); }
+      50%       { box-shadow: 0 0 40px rgba(255,215,0,.3); }
+    }
+    @media (max-width: 600px) {
+      #ws-grid {
+        grid-template-columns: repeat(16, 22px);
+        grid-template-rows: repeat(16, 22px);
+      }
+      .ws-cell { width: 22px; height: 22px; font-size: 9px; }
+    }
+
     /* ── Misc ── */
     .divider { width: 100%; height: 1px; background: var(--border); }
     .hidden { display: none !important; }
@@ -508,11 +657,11 @@
      GATE SCREEN
 ════════════════════════════════════ -->
 <section id="gate-screen" class="screen active">
-  <div class="gate-logo">Marek<br>or Not</div>
+  <div class="gate-logo">Marek or Not</div>
 
   <div class="gate-rule"></div>
 
-  <p class="gate-tagline">There is only one and only Marek Romanowicz. Another year, another adventure in the life of Marek.</p>
+  <p class="gate-tagline">✨ Another year, another adventure for the one and only, Marek Romanowicz ✨</p>
 
   <div class="gate-rule"></div>
 
@@ -528,6 +677,7 @@
     <button class="btn btn-primary" onclick="checkGate()">Enter</button>
   </div>
 
+  <button class="who-link" style="margin-top:8px;" onclick="openWordsearch()">Who is Marek? →</button>
   <p class="admin-link" id="admin-link" onclick="openAdmin()">admin</p>
 </section>
 
@@ -537,8 +687,10 @@
 <section id="main-screen" class="screen">
   <div class="app-header">
     <div class="app-title">Marek or Not</div>
-    <span class="app-subtitle">Is it him?</span>
   </div>
+  <p class="gate-tagline" style="margin-top:-8px;">✨ Another year, another adventure for the one and only, Marek Romanowicz ✨</p>
+
+  <button class="who-link" onclick="openWordsearch()">Who is Marek? →</button>
 
   <!-- Drop Zone -->
   <div id="drop-zone" onclick="triggerFileInput()">
@@ -609,6 +761,31 @@
 </section>
 
 <!-- ════════════════════════════════════
+     WORDSEARCH SCREEN
+════════════════════════════════════ -->
+<section id="wordsearch-screen" class="screen">
+  <div class="ws-header">
+    <div class="ws-title">🚀 Happy 34th, Marek! 🛩️</div>
+    <p class="ws-subtitle">just some of the words that make Marek, Marek</p>
+  </div>
+  <div class="ws-layout">
+    <div class="ws-panel">
+      <div id="ws-grid"></div>
+    </div>
+    <div class="ws-panel ws-word-panel">
+      <h3>Find These Words</h3>
+      <div id="ws-word-list"></div>
+      <div class="ws-progress-bar"><div class="ws-progress-fill" id="ws-progress-fill"></div></div>
+      <div class="ws-progress-text" id="ws-progress-text">0 / 24 found</div>
+    </div>
+  </div>
+  <div class="ws-congrats" id="ws-congrats">
+    🎉 Mission complete, Captain! All words found!<br>Happy 34th, Marek! 🌌
+  </div>
+  <button class="ws-back-btn" onclick="showScreen('main-screen')">← Back to Marek or Not</button>
+</section>
+
+<!-- ════════════════════════════════════
      ADMIN SCREEN
 ════════════════════════════════════ -->
 <section id="admin-screen" class="screen">
@@ -674,22 +851,33 @@ async function loadScatteredPhotos() {
     const vw = window.innerWidth;
     const vh = window.innerHeight;
 
-    // Place photos near edges, offset so they peek in
+    // On desktop, place photos in the margin beside the content column.
+    // Content column is max 520px centered, so margin = (vw - 520) / 2.
+    // Photos are 200px wide; we want them to sit just outside the content,
+    // or at least partially visible on narrower screens.
+    const photoW = vw < 600 ? 150 : 200;
+    const contentW = Math.min(520, vw);
+    const sideMargin = (vw - contentW) / 2; // space on each side
+    // Position so photos are fully in the margin when space allows, otherwise peek in
+    const leftPos  = Math.max(-30, sideMargin - photoW - 10);
+    const rightPos = Math.max(-30, sideMargin - photoW - 10);
+
     const slots = [
-      { top: 20,  left: -20, rot: 10 },
-      { top: 30,  right: -15, rot: -8 },
-      { bottom: 80, left: -25, rot: -11 },
-      { bottom: 60, right: -10, rot: 7 },
-      { top: Math.round(vh * 0.42), left: -22, rot: -6 },
+      { top: 40,  left: leftPos, rot: 10 },
+      { top: 60,  right: rightPos, rot: -8 },
+      { bottom: 100, left: leftPos, rot: -11 },
+      { bottom: 80, right: rightPos, rot: 7 },
+      { top: Math.round(vh * 0.42), right: Math.max(-30, rightPos - 15), rot: -6 },
     ];
 
-    // On narrow screens show 3, otherwise all
-    const count = vw < 500 ? 3 : rows.length;
+    // On mobile show 2 (corners), on desktop show all
+    const count = vw < 600 ? 2 : rows.length;
 
     rows.slice(0, count).forEach((r, i) => {
       const slot = slots[i];
       const div = document.createElement("div");
       div.className = "bg-photo";
+      div.style.width = photoW + "px";
       const rot = `rotate(${slot.rot}deg)`;
       div.style.setProperty("--rot", rot);
       div.style.transform = rot;
@@ -821,6 +1009,17 @@ function showPreviewAndAnalyze(dataUrl) {
 async function analyzePhoto() {
   if (!currentBase64) return;
 
+  const LOADING_MSGS = [
+    "Consulting the Marek oracle…",
+    "Running facial analysis…",
+    "Cross-referencing with known Marek sightings…",
+    "Checking cheekbone database…",
+    "Analyzing jawline topology…",
+    "Scanning for Marek-specific features…",
+    "Comparing against Warsaw records…",
+  ];
+  document.querySelector(".analyzing-text").textContent =
+    LOADING_MSGS[Math.floor(Math.random() * LOADING_MSGS.length)];
   document.getElementById("upload-btns").classList.add("hidden");
   document.getElementById("analyzing-box").classList.remove("hidden");
   document.getElementById("result-box").classList.add("hidden");
@@ -851,7 +1050,11 @@ function showResult({ isMarek, marekscore, confidence, reason }) {
 
   const vt = document.getElementById("verdict-text");
   vt.className = "verdict-text " + (isMarek ? "is-marek" : "not-marek");
-  vt.textContent = isMarek ? "MAREK ✓" : "NOT MAREK ✗";
+  if (marekscore >= 95)      vt.textContent = "Undeniably Marek.";
+  else if (marekscore >= 70) vt.textContent = "That's him.";
+  else if (marekscore >= 60) vt.textContent = "Probably Marek.";
+  else if (marekscore >= 30) vt.textContent = "Close, but no.";
+  else                       vt.textContent = "Absolutely not Marek.";
 
   const scoreClass = marekscore >= 70 ? "high" : marekscore >= 40 ? "mid" : "low";
   const sn = document.getElementById("score-number");
@@ -1185,6 +1388,219 @@ async function adminHandleFile(file) {
   };
   reader.readAsDataURL(file);
 }
+
+// ─────────────────────────────────────
+// WORD SEARCH
+// ─────────────────────────────────────
+const WS_WORDS = [
+  { display: "Warsaw",             word: "WARSAW"           },
+  { display: "Machine Learning",   word: "MACHINELEARNING"  },
+  { display: "Cesna",              word: "CESNA"            },
+  { display: "Skiing",             word: "SKIING"           },
+  { display: "Tracksuits",         word: "TRACKSUITS"       },
+  { display: "Sleepy Tea",         word: "SLEEPYTEA"        },
+  { display: "Hamilton",           word: "HAMILTON"         },
+  { display: "Cottage Cheese",     word: "COTTAGECHEESE"    },
+  { display: "Claudio",            word: "CLAUDIO"          },
+  { display: "Real Madrid",        word: "REALMADRID"       },
+  { display: "Tennis",             word: "TENNIS"           },
+  { display: "Greenpoint",         word: "GREENPOINT"       },
+  { display: "Flying",             word: "FLYING"           },
+  { display: "Senator's Favorite", word: "SENATORSFAVORITE" },
+  { display: "Maro",               word: "MARO"             },
+  { display: "Oxbridge",           word: "OXBRIDGE"         },
+  { display: "Captain",            word: "CAPTAIN"          },
+  { display: "Beloved",            word: "BELOVED"          },
+  { display: "World Citizen",       word: "WORLDCITIZEN"     },
+  { display: "Smiley",             word: "SMILEY"           },
+  { display: "Aspiring Stylist",   word: "ASPIRINGSTYLIST"  },
+  { display: "A Good One",         word: "AGOODONE"         },
+  { display: "Patagonia",          word: "PATAGONIA"        },
+  { display: "Instagram",          word: "INSTAGRAM"        },
+];
+
+// All 8 directions: right, down, diagonal↘, diagonal↙, left, up, diagonal↗, diagonal↖
+const WS_DIRS = [[0,1],[1,0],[1,1],[1,-1],[0,-1],[-1,0],[-1,1],[-1,-1]];
+const WS_SIZE = 16;
+const WS_FOUND_BG = [
+  'rgba(100,220,130,.38)','rgba(255,180,50,.38)','rgba(120,160,255,.38)',
+  'rgba(255,100,180,.38)','rgba(180,100,255,.38)','rgba(50,210,210,.38)','rgba(255,220,80,.38)',
+];
+const WS_FOUND_FG = ['#90ffb0','#ffd080','#a0c0ff','#ff90c0','#c090ff','#70e8e8','#ffe060'];
+
+let wsGrid = [], wsPlaced = [], wsFoundWords = new Set(), wsFoundCells = {};
+let wsDragging = false, wsDragStart = null, wsDragCells = [];
+let wsBuilt = false;
+
+function openWordsearch() {
+  showScreen('wordsearch-screen');
+  if (!wsBuilt) { wsBuild(); wsBuilt = true; }
+}
+
+function wsCanPlace(word, r, c, dr, dc) {
+  for (let i = 0; i < word.length; i++) {
+    const nr = r+i*dr, nc = c+i*dc;
+    if (nr<0||nr>=WS_SIZE||nc<0||nc>=WS_SIZE) return false;
+    if (wsGrid[nr][nc] && wsGrid[nr][nc] !== word[i]) return false;
+  }
+  return true;
+}
+
+function wsDoPlace(word, r, c, dr, dc) {
+  const cells = [];
+  for (let i = 0; i < word.length; i++) {
+    const nr = r+i*dr, nc = c+i*dc;
+    wsGrid[nr][nc] = word[i];
+    cells.push({r:nr,c:nc});
+  }
+  return cells;
+}
+
+function wsBuild() {
+  wsGrid = Array.from({length:WS_SIZE}, () => Array(WS_SIZE).fill(''));
+  wsPlaced = []; wsFoundWords = new Set(); wsFoundCells = {};
+  const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const sorted = [...WS_WORDS].sort((a,b) => b.word.length - a.word.length);
+  for (const wd of sorted) {
+    let ok = false;
+    for (let attempt = 0; attempt < 500 && !ok; attempt++) {
+      const dir = WS_DIRS[Math.floor(Math.random()*WS_DIRS.length)];
+      const r = Math.floor(Math.random()*WS_SIZE);
+      const c = Math.floor(Math.random()*WS_SIZE);
+      if (wsCanPlace(wd.word,r,c,dir[0],dir[1])) {
+        wsPlaced.push({wd, cells:wsDoPlace(wd.word,r,c,dir[0],dir[1])});
+        ok = true;
+      }
+    }
+  }
+  for (let r=0;r<WS_SIZE;r++)
+    for (let c=0;c<WS_SIZE;c++)
+      if (!wsGrid[r][c]) wsGrid[r][c]=LETTERS[Math.floor(Math.random()*LETTERS.length)];
+  wsRenderGrid(); wsRenderWordList(); wsUpdateProgress();
+}
+
+function wsRenderGrid() {
+  const el = document.getElementById('ws-grid');
+  el.innerHTML = '';
+  for (let r=0;r<WS_SIZE;r++) for (let c=0;c<WS_SIZE;c++) {
+    const div = document.createElement('div');
+    div.className = 'ws-cell';
+    div.textContent = wsGrid[r][c];
+    div.dataset.r = r; div.dataset.c = c;
+    const key = `${r},${c}`;
+    if (wsFoundCells[key]!==undefined) {
+      const ci = wsFoundCells[key];
+      div.style.background = WS_FOUND_BG[ci%WS_FOUND_BG.length];
+      div.style.color = WS_FOUND_FG[ci%WS_FOUND_FG.length];
+    }
+    el.appendChild(div);
+  }
+}
+
+function wsRenderWordList() {
+  const el = document.getElementById('ws-word-list');
+  el.innerHTML = '';
+  WS_WORDS.forEach(wd => {
+    const div = document.createElement('div');
+    div.className = 'ws-word-item' + (wsFoundWords.has(wd.word) ? ' found' : '');
+    div.textContent = wd.display;
+    div.id = `wsw-${wd.word}`;
+    el.appendChild(div);
+  });
+}
+
+function wsUpdateProgress() {
+  const found = wsFoundWords.size, total = WS_WORDS.length;
+  document.getElementById('ws-progress-fill').style.width = (found/total*100)+'%';
+  document.getElementById('ws-progress-text').textContent = `${found} / ${total} found`;
+  if (found===total) document.getElementById('ws-congrats').style.display='block';
+}
+
+function wsLineCells(a, b) {
+  const dr=b.r-a.r, dc=b.c-a.c;
+  if (dr!==0&&dc!==0&&Math.abs(dr)!==Math.abs(dc)) return [];
+  const len=Math.max(Math.abs(dr),Math.abs(dc))+1;
+  const sr=dr===0?0:dr/Math.abs(dr), sc=dc===0?0:dc/Math.abs(dc);
+  return Array.from({length:len},(_,i)=>({r:a.r+i*sr,c:a.c+i*sc}));
+}
+
+function wsTryMatch(cells) {
+  const keys=cells.map(({r,c})=>`${r},${c}`).join('|');
+  const keysRev=[...cells].reverse().map(({r,c})=>`${r},${c}`).join('|');
+  for (const pw of wsPlaced) {
+    if (wsFoundWords.has(pw.wd.word)) continue;
+    const pwKeys=pw.cells.map(({r,c})=>`${r},${c}`).join('|');
+    if (pwKeys===keys||pwKeys===keysRev) return pw;
+  }
+  return null;
+}
+
+function wsApplySelecting(cells) {
+  document.querySelectorAll('.ws-cell.selecting').forEach(el => {
+    el.classList.remove('selecting');
+    const key=`${el.dataset.r},${el.dataset.c}`;
+    if (wsFoundCells[key]!==undefined) {
+      const ci=wsFoundCells[key];
+      el.style.background=WS_FOUND_BG[ci%WS_FOUND_BG.length];
+      el.style.color=WS_FOUND_FG[ci%WS_FOUND_FG.length];
+    } else { el.style.removeProperty('background'); el.style.removeProperty('color'); }
+  });
+  cells.forEach(({r,c})=>{
+    const el=document.querySelector(`#ws-grid [data-r="${r}"][data-c="${c}"]`);
+    if (el) el.classList.add('selecting');
+  });
+}
+
+function wsCellAt(x,y) { return document.elementFromPoint(x,y)?.closest('.ws-cell')||null; }
+
+document.addEventListener('mousedown', e => {
+  const cell=e.target.closest('.ws-cell'); if (!cell) return;
+  e.preventDefault();
+  wsDragging=true; wsDragStart={r:+cell.dataset.r,c:+cell.dataset.c};
+  wsDragCells=[wsDragStart]; wsApplySelecting(wsDragCells);
+});
+document.addEventListener('mousemove', e => {
+  if (!wsDragging) return;
+  const cell=wsCellAt(e.clientX,e.clientY);
+  if (cell) { wsDragCells=wsLineCells(wsDragStart,{r:+cell.dataset.r,c:+cell.dataset.c}); wsApplySelecting(wsDragCells); }
+});
+document.addEventListener('mouseup', () => {
+  if (!wsDragging) return; wsDragging=false;
+  const match=wsDragCells.length>=2?wsTryMatch(wsDragCells):null;
+  if (match) {
+    const ci=wsFoundWords.size; wsFoundWords.add(match.wd.word);
+    match.cells.forEach(({r,c})=>{wsFoundCells[`${r},${c}`]=ci;});
+    wsApplySelecting([]); wsRenderGrid();
+    const wi=document.getElementById(`wsw-${match.wd.word}`);
+    if (wi) wi.className='ws-word-item found';
+    wsUpdateProgress();
+  } else wsApplySelecting([]);
+  wsDragCells=[];
+});
+document.addEventListener('touchstart', e => {
+  const t=e.touches[0], cell=wsCellAt(t.clientX,t.clientY); if (!cell) return;
+  e.preventDefault();
+  wsDragging=true; wsDragStart={r:+cell.dataset.r,c:+cell.dataset.c};
+  wsDragCells=[wsDragStart]; wsApplySelecting(wsDragCells);
+}, {passive:false});
+document.addEventListener('touchmove', e => {
+  if (!wsDragging) return; e.preventDefault();
+  const t=e.touches[0], cell=wsCellAt(t.clientX,t.clientY);
+  if (cell) { wsDragCells=wsLineCells(wsDragStart,{r:+cell.dataset.r,c:+cell.dataset.c}); wsApplySelecting(wsDragCells); }
+}, {passive:false});
+document.addEventListener('touchend', () => {
+  if (!wsDragging) return; wsDragging=false;
+  const match=wsDragCells.length>=2?wsTryMatch(wsDragCells):null;
+  if (match) {
+    const ci=wsFoundWords.size; wsFoundWords.add(match.wd.word);
+    match.cells.forEach(({r,c})=>{wsFoundCells[`${r},${c}`]=ci;});
+    wsApplySelecting([]); wsRenderGrid();
+    const wi=document.getElementById(`wsw-${match.wd.word}`);
+    if (wi) wi.className='ws-word-item found';
+    wsUpdateProgress();
+  } else wsApplySelecting([]);
+  wsDragCells=[];
+});
 </script>
 </body>
 </html>

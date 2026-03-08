@@ -77,7 +77,7 @@ export async function handler(event) {
 
   contentBlocks.push({
     type: "text",
-    text: `Now examine this test photo and compare it to the reference photos above. Respond ONLY with a JSON object — no markdown, no explanation, just raw JSON:\n{\n  "marekscore": <integer 0-100>,\n  "isMarek": <boolean — true if marekscore >= 60>,\n  "confidence": "<high|medium|low>",\n  "reason": "<one concise sentence explaining the key facial evidence>"\n}\n\nScoring guide: 100 = definitely Marek, 0 = definitely not Marek, 50–65 = could be a close relative or sibling. Base your score purely on facial feature similarity. If there is no visible face, return marekscore 0 with low confidence.`,
+    text: `Now examine this test photo and compare it to the reference photos above. Respond ONLY with a JSON object — no markdown, no explanation, just raw JSON:\n{\n  "marekscore": <integer 0-100>,\n  "isMarek": <boolean — true if marekscore >= 60>,\n  "confidence": "<high|medium|low>",\n  "reason": "<one concise sentence about the facial features you observe — do NOT mention 'reference photos' or 'reference images', just describe what you see>"\n}\n\nScoring guide: 100 = definitely Marek, 0 = definitely not Marek, 50–65 = could be a close relative or sibling. Base your score purely on facial feature similarity. If there is no visible face, return marekscore 0 with low confidence.`,
   });
 
   contentBlocks.push({
