@@ -4,6 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Marek or Not</title>
+  <meta property="og:title" content="Marek or Not" />
+  <meta property="og:description" content="Is it Marek? Upload a photo and find out." />
+  <meta property="og:image" content="https://feskdeuuuhrbordnrypv.supabase.co/storage/v1/object/public/marek-reference/decor/1772931840749-IMG_0236_2.jpg" />
+  <meta property="og:url" content="https://hbdmarek.netlify.app/" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -656,7 +662,7 @@
 <!-- ════════════════════════════════════
      GATE SCREEN
 ════════════════════════════════════ -->
-<section id="gate-screen" class="screen active">
+<section id="gate-screen" class="screen">
   <div class="gate-logo">Marek or Not</div>
 
   <div class="gate-rule"></div>
@@ -684,7 +690,7 @@
 <!-- ════════════════════════════════════
      MAIN SCREEN
 ════════════════════════════════════ -->
-<section id="main-screen" class="screen">
+<section id="main-screen" class="screen active">
   <div class="app-header">
     <div class="app-title">Marek or Not</div>
   </div>
@@ -910,10 +916,7 @@ function showScreen(id) {
 // GATE
 // ─────────────────────────────────────
 (function initGate() {
-  if (sessionStorage.getItem("marek_auth") === "1") showScreen("main-screen");
-  document.getElementById("gate-input").addEventListener("keydown", e => {
-    if (e.key === "Enter") checkGate();
-  });
+  showScreen("main-screen");
 })();
 
 function checkGate() {
