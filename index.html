@@ -1910,7 +1910,7 @@ async function uploadToGallery(base64, mediaType, marekscore) {
     const ext = mediaType === 'image/png' ? 'png' : 'jpg';
     const filename = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
-    const uploadRes = await fetch(`${SUPABASE_URL}/storage/v1/object/marek-gallery/${filename}`, {
+    const uploadRes = await fetch(`${SUPABASE_URL}/storage/v1/object/marek-gallery-pub/${filename}`, {
       method: 'POST',
       headers: {
         apikey: SUPABASE_ANON,
@@ -1922,7 +1922,7 @@ async function uploadToGallery(base64, mediaType, marekscore) {
 
     if (!uploadRes.ok) { console.warn('Gallery upload failed:', await uploadRes.text()); return; }
 
-    const url = `${SUPABASE_URL}/storage/v1/object/public/marek-gallery/${filename}`;
+    const url = `${SUPABASE_URL}/storage/v1/object/public/marek-gallery-pub/${filename}`;
 
     await fetch(`${SUPABASE_URL}/rest/v1/marek_gallery`, {
       method: 'POST',
