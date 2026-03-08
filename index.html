@@ -695,6 +695,7 @@
     <div class="app-title">Marek or Not</div>
   </div>
   <p class="gate-tagline" style="margin-top:-8px;">✨ Another year, another adventure for the one and only, Marek Romanowicz ✨</p>
+  <p id="usage-stat" style="font-size:0.8rem;color:var(--text-muted);margin-top:-4px;"></p>
 
   <button class="who-link" onclick="openWordsearch()">Who is Marek? →</button>
 
@@ -903,6 +904,20 @@ async function loadScatteredPhotos() {
 }
 
 loadScatteredPhotos();
+
+async function loadUsageStat() {
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/marek_verdicts?select=id`,
+      { headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}`, "Prefer": "count=exact", "Range-Unit": "items", "Range": "0-0" } }
+    );
+    const count = res.headers.get("content-range")?.split("/")?.[1];
+    if (count) {
+      document.getElementById("usage-stat").textContent = `${Number(count).toLocaleString()} photos checked so far`;
+    }
+  } catch { /* silently fail */ }
+}
+loadUsageStat();
 
 // ─────────────────────────────────────
 // SCREEN MANAGEMENT
