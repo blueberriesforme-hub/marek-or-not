@@ -924,8 +924,7 @@
   <div id="mobile-photo-strip"></div>
 
   <!-- Hidden inputs -->
-  <input id="file-input"   type="file" accept="image/*" class="hidden" onchange="handleFile(this.files[0])" />
-  <input id="camera-input" type="file" accept="image/*" capture="environment" class="hidden" onchange="handleFile(this.files[0])" />
+  <input id="file-input" type="file" accept="image/*" class="hidden" onchange="handleFile(this.files[0])" />
 
   <!-- Analyzing state -->
   <div id="analyzing-box" class="analyzing-box hidden">
@@ -1241,8 +1240,17 @@ dragTile.addEventListener("drop", e => {
   if (file) handleFile(file);
 });
 
-function triggerFileInput()   { document.getElementById("file-input").click(); }
-function triggerCamera()      { document.getElementById("camera-input").click(); }
+function triggerFileInput() {
+  const input = document.getElementById("file-input");
+  input.removeAttribute("capture");
+  input.click();
+}
+function triggerCamera() {
+  const input = document.getElementById("file-input");
+  input.setAttribute("capture", "environment");
+  input.click();
+  input.addEventListener("change", () => input.removeAttribute("capture"), { once: true });
+}
 
 // ─────────────────────────────────────
 // FILE HANDLING & STATE MACHINE
