@@ -84,10 +84,33 @@
       to   { opacity: 1; transform: var(--rot) scale(1); }
     }
 
-    /* ── Gate Screen ── */
+    /* ── Gate Screen (dark splash) ── */
     #gate-screen {
       justify-content: center;
       gap: 20px;
+      background: #0d0b08;
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    #gate-screen.fade-out {
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(1.03);
+    }
+    .gate-splash-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(2.6rem, 9vw, 4rem);
+      font-weight: 900;
+      color: #f4efe6;
+      text-align: center;
+      line-height: 1.1;
+      letter-spacing: -1.5px;
+    }
+    .gate-splash-sub {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-style: italic;
+      font-size: 1.05rem;
+      color: rgba(244, 239, 230, 0.45);
+      text-align: center;
     }
     .gate-logo {
       font-family: 'Playfair Display', Georgia, serif;
@@ -238,11 +261,51 @@
     }
     #preview-img.visible { display: block; }
 
-    .upload-btn-row {
+    /* ── Upload Tiles ── */
+    .upload-tiles {
       width: 100%;
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px;
+    }
+    .upload-tile {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 22px 12px 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s, transform 0.15s, box-shadow 0.2s;
+      font-family: 'Inter', sans-serif;
+    }
+    .upload-tile:hover {
+      border-color: var(--ink);
+      background: var(--surface2);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.07);
+    }
+    .upload-tile:active { transform: scale(0.97); box-shadow: none; }
+    .upload-tile-icon { font-size: 1.8rem; line-height: 1; }
+    .upload-tile-label { font-size: 0.88rem; font-weight: 600; color: var(--text); }
+    .upload-tile-sub { font-size: 0.7rem; color: var(--text-muted); }
+    .upload-or {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--text-muted);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+    }
+    .upload-or::before, .upload-or::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
     }
 
     /* ── Spinner ── */
@@ -698,35 +761,15 @@
 <!-- ════════════════════════════════════
      GATE SCREEN
 ════════════════════════════════════ -->
-<section id="gate-screen" class="screen">
-  <div class="gate-logo">Marek or Not</div>
-
-  <div class="gate-rule"></div>
-
-  <p class="gate-tagline">✨ Another year, another adventure for the one and only, Marek Romanowicz ✨</p>
-
-  <div class="gate-rule"></div>
-
-  <div class="gate-form">
-    <input
-      id="gate-input"
-      class="gate-input"
-      type="password"
-      placeholder="Password"
-      autocomplete="current-password"
-    />
-    <p id="gate-error" class="gate-error"></p>
-    <button class="btn btn-primary" onclick="checkGate()">Enter</button>
-  </div>
-
-  <button class="who-link" style="margin-top:8px;" onclick="openWordsearch()">Who is Marek? →</button>
-  <p class="admin-link" id="admin-link" onclick="openAdmin()">admin</p>
+<section id="gate-screen" class="screen active">
+  <div class="gate-splash-title">Another year<br>of Marek.</div>
+  <p class="gate-splash-sub">✨ Happy 34th ✨</p>
 </section>
 
 <!-- ════════════════════════════════════
      MAIN SCREEN
 ════════════════════════════════════ -->
-<section id="main-screen" class="screen active">
+<section id="main-screen" class="screen">
   <div class="app-header">
     <div class="app-title">Marek or Not</div>
   </div>
@@ -742,14 +785,25 @@
     <img id="preview-img" alt="Preview" />
     <div id="drop-hint">
       <div class="drop-icon">📸</div>
-      <p class="drop-text">Drop a photo here, or use the buttons below</p>
+      <p class="drop-text">drag & drop a photo here</p>
     </div>
   </div>
 
-  <!-- Upload buttons -->
-  <div class="upload-btn-row" id="upload-btns">
-    <button class="btn btn-secondary" onclick="triggerFileInput()">Upload Photo</button>
-    <button class="btn btn-secondary" onclick="triggerCamera()">Take Photo</button>
+  <!-- Upload tiles -->
+  <div id="upload-btns">
+    <div class="upload-or"><span>or</span></div>
+    <div class="upload-tiles">
+      <button class="upload-tile" onclick="triggerFileInput()">
+        <span class="upload-tile-icon">🖼️</span>
+        <span class="upload-tile-label">Upload</span>
+        <span class="upload-tile-sub">from camera roll</span>
+      </button>
+      <button class="upload-tile" onclick="triggerCamera()">
+        <span class="upload-tile-icon">📷</span>
+        <span class="upload-tile-label">Take Photo</span>
+        <span class="upload-tile-sub">use your camera</span>
+      </button>
+    </div>
   </div>
 
   <!-- Hidden inputs -->
@@ -802,6 +856,7 @@
     <span class="stats-title">Community Stats</span>
     <span id="usage-stat" class="stats-text">Loading…</span>
   </div>
+  <p class="admin-link" onclick="openAdmin()">admin</p>
 </section>
 
 <!-- ════════════════════════════════════
@@ -881,6 +936,7 @@
   </div>
 </section>
 
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 <script>
 // ─────────────────────────────────────
 // CONFIG
@@ -992,7 +1048,12 @@ function showScreen(id) {
 // GATE
 // ─────────────────────────────────────
 (function initGate() {
-  showScreen("main-screen");
+  showScreen("gate-screen");
+  setTimeout(() => {
+    const gs = document.getElementById("gate-screen");
+    gs.classList.add("fade-out");
+    setTimeout(() => showScreen("main-screen"), 700);
+  }, 2000);
 })();
 
 function checkGate() {
@@ -1158,6 +1219,15 @@ function showResult({ isMarek, marekscore, confidence, reason }) {
 
   box.classList.remove("hidden");
   loadCommunityStats();
+
+  if (isMarek && typeof confetti === 'function') {
+    confetti({
+      particleCount: 160,
+      spread: 75,
+      origin: { y: 0.55 },
+      colors: ['#2a7a3b', '#7ee8a2', '#ffd700', '#ff9900', '#ffffff', '#f4efe6'],
+    });
+  }
 }
 
 function resetMain() {
