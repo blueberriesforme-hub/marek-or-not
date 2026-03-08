@@ -799,6 +799,59 @@
     .lb-confidence { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #6678aa; width: 70px; flex-shrink: 0; }
     .lb-date { font-size: 0.78rem; color: #445; margin-left: auto; }
 
+    /* ── Gallery Screen ── */
+    #gallery-screen {
+      background: #0a0804;
+      color: #f4efe6;
+      max-width: 100%;
+      padding: 28px 16px 48px;
+      min-height: 100vh;
+      align-items: center;
+      gap: 24px;
+    }
+    .gallery-grid {
+      width: 100%;
+      max-width: 640px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 16px;
+      padding: 8px 4px;
+    }
+    .gallery-item {
+      background: #fff;
+      padding: 8px 8px 28px;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.5);
+      transform: rotate(var(--rot));
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      cursor: default;
+    }
+    .gallery-item:hover {
+      transform: rotate(0deg) scale(1.06);
+      box-shadow: 0 12px 36px rgba(0,0,0,0.6);
+      z-index: 10;
+      position: relative;
+    }
+    .gallery-item img {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      display: block;
+    }
+    .gallery-score {
+      text-align: center;
+      font-size: 0.7rem;
+      color: #8a7f6e;
+      margin-top: 6px;
+      font-family: 'Inter', sans-serif;
+    }
+    .gallery-empty {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 48px 0;
+      opacity: 0.4;
+      font-size: 0.9rem;
+    }
+
     /* ── Misc ── */
     .divider { width: 100%; height: 1px; background: var(--border); }
     .hidden { display: none !important; }
@@ -863,6 +916,8 @@
     <button class="soft-link" onclick="openWordsearch()">Who is Marek?</button>
     <span style="color:var(--border);font-size:0.7rem;">·</span>
     <button class="soft-link" onclick="openLeaderboard()">🏆 Leaderboard</button>
+    <span style="color:var(--border);font-size:0.7rem;">·</span>
+    <button class="soft-link" onclick="openGallery()">📸 Gallery</button>
   </div>
 
   <!-- Mobile photo strip (in-page, between nav and stats) -->
@@ -898,6 +953,9 @@
 
     <!-- Share button -->
     <button class="btn btn-secondary" onclick="shareResult()">Share Result 📤</button>
+
+    <!-- Gallery link (shown only on positive verdict) -->
+    <button id="view-gallery-btn" class="btn btn-secondary hidden" onclick="openGallery()">📸 See the Hall of Marek</button>
 
     <!-- Feedback -->
     <div class="feedback-row">
@@ -955,6 +1013,20 @@
   </div>
   <div id="lb-table" class="lb-table">
     <div class="lb-row" style="opacity:0.5;justify-content:center;">Loading…</div>
+  </div>
+  <button class="ws-back-btn" onclick="showScreen('main-screen')">← Back to Marek or Not</button>
+</section>
+
+<!-- ════════════════════════════════════
+     GALLERY SCREEN
+════════════════════════════════════ -->
+<section id="gallery-screen" class="screen">
+  <div class="ws-header">
+    <div class="ws-title">📸 Hall of Marek</div>
+    <p class="ws-subtitle">Confirmed sightings, immortalised forever</p>
+  </div>
+  <div id="gallery-grid" class="gallery-grid">
+    <div class="gallery-empty">Loading…</div>
   </div>
   <button class="ws-back-btn" onclick="showScreen('main-screen')">← Back to Marek or Not</button>
 </section>
@@ -1295,6 +1367,12 @@ function showResult({ isMarek, marekscore, confidence, reason }) {
   box.classList.remove("hidden");
   loadCommunityStats();
 
+  // Show/hide gallery button + auto-upload on positive verdict
+  document.getElementById('view-gallery-btn').classList.toggle('hidden', !isMarek);
+  if (isMarek && currentBase64) {
+    uploadToGallery(currentBase64, currentMediaType, marekscore);
+  }
+
   if (isMarek && typeof confetti === 'function') {
     confetti({
       particleCount: 160,
@@ -1319,6 +1397,7 @@ function resetMain() {
   document.getElementById("upload-btns").classList.remove("hidden");
   document.getElementById("score-bar").style.width = "0%";
   document.getElementById("roast-line").classList.add("hidden");
+  document.getElementById("view-gallery-btn").classList.add("hidden");
 }
 
 // ─────────────────────────────────────
@@ -1777,6 +1856,78 @@ async function loadLeaderboard() {
     }).join('');
   } catch {
     table.innerHTML = '<div class="lb-row" style="opacity:0.5;justify-content:center;">Failed to load.</div>';
+  }
+}
+
+// ─────────────────────────────────────
+// GALLERY
+// ─────────────────────────────────────
+function openGallery() {
+  showScreen('gallery-screen');
+  loadGallery();
+}
+
+async function loadGallery() {
+  const grid = document.getElementById('gallery-grid');
+  grid.innerHTML = '<div class="gallery-empty">Loading…</div>';
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/marek_gallery?select=url,marekscore,created_at&order=created_at.desc`,
+      { headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` } }
+    );
+    const rows = await res.json();
+    if (!rows.length) {
+      grid.innerHTML = '<div class="gallery-empty">No confirmed sightings yet. Be the first.</div>';
+      return;
+    }
+    const rots = [-2.5, 1.8, -1.2, 2.2, -3, 1.5, -2, 3, -1.8, 2.5];
+    grid.innerHTML = rows.map((r, i) => `
+      <div class="gallery-item" style="--rot:${rots[i % rots.length]}deg">
+        <img src="${r.url}" alt="Marek" loading="lazy" />
+        <div class="gallery-score">${r.marekscore}/100</div>
+      </div>
+    `).join('');
+  } catch {
+    grid.innerHTML = '<div class="gallery-empty">Failed to load gallery.</div>';
+  }
+}
+
+async function uploadToGallery(base64, mediaType, marekscore) {
+  try {
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    const blob = new Blob([bytes], { type: mediaType });
+
+    const ext = mediaType === 'image/png' ? 'png' : 'jpg';
+    const filename = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+
+    const uploadRes = await fetch(`${SUPABASE_URL}/storage/v1/object/marek-gallery/${filename}`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_ANON,
+        Authorization: `Bearer ${SUPABASE_ANON}`,
+        'Content-Type': mediaType,
+      },
+      body: blob,
+    });
+
+    if (!uploadRes.ok) { console.warn('Gallery upload failed:', await uploadRes.text()); return; }
+
+    const url = `${SUPABASE_URL}/storage/v1/object/public/marek-gallery/${filename}`;
+
+    await fetch(`${SUPABASE_URL}/rest/v1/marek_gallery`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_ANON,
+        Authorization: `Bearer ${SUPABASE_ANON}`,
+        'Content-Type': 'application/json',
+        Prefer: 'return=minimal',
+      },
+      body: JSON.stringify({ url, marekscore }),
+    });
+  } catch (err) {
+    console.warn('Gallery upload error:', err);
   }
 }
 
