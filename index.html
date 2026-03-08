@@ -350,12 +350,15 @@
     .score-number.low     { color: var(--red); }
 
     .result-reason {
-      font-family: 'Playfair Display', Georgia, serif;
+      font-family: 'Inter', system-ui, sans-serif;
       font-size: 0.92rem;
-      font-style: italic;
       color: var(--text-muted);
       text-align: center;
       line-height: 1.6;
+      background: #ede7db;
+      border-radius: 6px;
+      padding: 12px 16px;
+      width: 100%;
     }
 
     /* ── Confidence Badge ── */
@@ -646,8 +649,41 @@
         grid-template-columns: repeat(16, 22px);
         grid-template-rows: repeat(16, 22px);
       }
-      .ws-cell { width: 22px; height: 22px; font-size: 9px; }
+      .ws-cell { width: 22px; height: 22px; font-size: 9px; min-width: 28px; min-height: 28px; }
+      .ws-layout { flex-direction: column; }
     }
+
+    /* ── Leaderboard Screen ── */
+    #leaderboard-screen {
+      background: #06071a;
+      color: #dde;
+      max-width: 100%;
+      padding: 28px 16px 48px;
+      min-height: 100vh;
+      align-items: center;
+      gap: 24px;
+    }
+    .lb-table {
+      width: 100%;
+      max-width: 480px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .lb-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 12px 20px;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      font-size: 0.9rem;
+    }
+    .lb-row:last-child { border-bottom: none; }
+    .lb-rank { width: 28px; font-weight: 700; color: #ffd700; text-align: center; flex-shrink: 0; }
+    .lb-score { font-size: 1.1rem; font-weight: 700; color: #90ffb0; width: 55px; flex-shrink: 0; }
+    .lb-confidence { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #6678aa; width: 70px; flex-shrink: 0; }
+    .lb-date { font-size: 0.78rem; color: #445; margin-left: auto; }
 
     /* ── Misc ── */
     .divider { width: 100%; height: 1px; background: var(--border); }
@@ -696,7 +732,10 @@
   </div>
   <p class="gate-tagline" style="margin-top:-8px;">✨ Another year, another adventure for the one and only, Marek Romanowicz ✨</p>
 
-  <button class="who-link" onclick="openWordsearch()">Who is Marek? →</button>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
+    <button class="who-link" onclick="openWordsearch()">Who is Marek? →</button>
+    <button class="who-link" onclick="openLeaderboard()">🏆 Leaderboard</button>
+  </div>
 
   <!-- Drop Zone -->
   <div id="drop-zone" onclick="triggerFileInput()">
@@ -739,9 +778,10 @@
 
     <p id="result-reason" class="result-reason"></p>
 
-    <div style="display:flex; gap:10px; align-items:center;">
-      <span id="confidence-badge" class="confidence-badge"></span>
-    </div>
+    <span id="confidence-badge" class="confidence-badge"></span>
+
+    <!-- Share button -->
+    <button class="btn btn-secondary" onclick="shareResult()">Share Result 📤</button>
 
     <!-- Feedback -->
     <div class="feedback-row">
@@ -752,15 +792,7 @@
     </div>
 
     <!-- Roast one-liner (shown when verdict is flagged wrong) -->
-    <p id="roast-line" class="result-reason hidden" style="color:var(--text-muted);border-top:1px solid var(--border);padding-top:16px;width:100%;text-align:center;"></p>
-
-    <div class="divider"></div>
-
-    <!-- Accuracy stats -->
-    <div class="stats-row">
-      <span class="stats-title">Community Stats</span>
-      <span id="stats-text" class="stats-text">Loading…</span>
-    </div>
+    <p id="roast-line" class="result-reason hidden" style="border-top:1px solid var(--border);padding-top:16px;"></p>
 
     <button class="btn btn-secondary" onclick="resetMain()">Check Another Photo</button>
   </div>
@@ -793,6 +825,20 @@
   </div>
   <div class="ws-congrats" id="ws-congrats">
     🎉 Mission complete, Captain! All words found!<br>Happy 34th, Marek! 🌌
+  </div>
+  <button class="ws-back-btn" onclick="showScreen('main-screen')">← Back to Marek or Not</button>
+</section>
+
+<!-- ════════════════════════════════════
+     LEADERBOARD SCREEN
+════════════════════════════════════ -->
+<section id="leaderboard-screen" class="screen">
+  <div class="ws-header">
+    <div class="ws-title">🏆 Marekness Leaderboard</div>
+    <p class="ws-subtitle">Top 10 most Marek-looking photos ever submitted</p>
+  </div>
+  <div id="lb-table" class="lb-table">
+    <div class="lb-row" style="opacity:0.5;justify-content:center;">Loading…</div>
   </div>
   <button class="ws-back-btn" onclick="showScreen('main-screen')">← Back to Marek or Not</button>
 </section>
@@ -910,23 +956,29 @@ async function loadScatteredPhotos() {
 
 loadScatteredPhotos();
 
-async function loadUsageStat() {
+async function loadCommunityStats() {
   try {
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/marek_verdicts?select=is_marek`,
-      { headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` } }
+      `${SUPABASE_URL}/rest/v1/rpc/get_verdict_stats`,
+      {
+        method: 'POST',
+        headers: {
+          apikey: SUPABASE_ANON,
+          Authorization: `Bearer ${SUPABASE_ANON}`,
+          'Content-Type': 'application/json',
+        },
+        body: '{}',
+      }
     );
-    const rows = await res.json();
-    const total = rows.length;
-    const marekCount = rows.filter(r => r.is_marek).length;
-    const notMarekCount = total - marekCount;
-    document.getElementById("usage-stat").textContent =
-      `${total.toLocaleString()} checks · ${marekCount} Marek · ${notMarekCount} not Marek`;
+    if (!res.ok) throw new Error();
+    const stats = await res.json();
+    const text = `${Number(stats.total).toLocaleString()} checks · ${stats.marek_count} Marek · ${stats.not_marek_count} not Marek`;
+    document.getElementById("usage-stat").textContent = text;
   } catch {
     document.getElementById("usage-stat").textContent = "Stats unavailable";
   }
 }
-loadUsageStat();
+loadCommunityStats();
 
 // ─────────────────────────────────────
 // SCREEN MANAGEMENT
@@ -989,6 +1041,7 @@ function triggerCamera()      { document.getElementById("camera-input").click();
 // ─────────────────────────────────────
 let currentBase64 = null;
 let currentMediaType = null;
+let currentResult = null;
 
 function handleFile(file) {
   if (!file || !file.type.startsWith("image/")) return;
@@ -1072,6 +1125,7 @@ async function analyzePhoto() {
 }
 
 function showResult({ isMarek, marekscore, confidence, reason }) {
+  currentResult = { isMarek, marekscore, confidence, reason };
   document.getElementById("analyzing-box").classList.add("hidden");
 
   const box = document.getElementById("result-box");
@@ -1103,12 +1157,13 @@ function showResult({ isMarek, marekscore, confidence, reason }) {
   badge.textContent = confidence + " confidence";
 
   box.classList.remove("hidden");
-  loadStats();
+  loadCommunityStats();
 }
 
 function resetMain() {
   currentBase64 = null;
   currentMediaType = null;
+  currentResult = null;
 
   const img = document.getElementById("preview-img");
   img.src = "";
@@ -1119,27 +1174,6 @@ function resetMain() {
   document.getElementById("upload-btns").classList.remove("hidden");
   document.getElementById("score-bar").style.width = "0%";
   document.getElementById("roast-line").classList.add("hidden");
-}
-
-// ─────────────────────────────────────
-// ACCURACY STATS
-// ─────────────────────────────────────
-async function loadStats() {
-  try {
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/marek_verdicts?select=is_marek,marekness_score`,
-      { headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` } }
-    );
-    if (!res.ok) throw new Error();
-    const rows = await res.json();
-    const total = rows.length;
-    const marekCount = rows.filter(r => r.is_marek).length;
-    const notMarekCount = total - marekCount;
-    document.getElementById("stats-text").textContent =
-      `${total} checks · ${marekCount} Marek · ${notMarekCount} not Marek`;
-  } catch {
-    document.getElementById("stats-text").textContent = "Stats unavailable";
-  }
 }
 
 // ─────────────────────────────────────
@@ -1416,6 +1450,189 @@ async function adminHandleFile(file) {
     }
   };
   reader.readAsDataURL(file);
+}
+
+// ─────────────────────────────────────
+// SHARE RESULT (canvas verdict card)
+// ─────────────────────────────────────
+async function shareResult() {
+  if (!currentResult) return;
+
+  const { isMarek, marekscore, confidence, reason } = currentResult;
+  const canvas = document.createElement('canvas');
+  canvas.width = 800;
+  canvas.height = 960;
+  const ctx = canvas.getContext('2d');
+
+  // Background
+  ctx.fillStyle = '#f4efe6';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Polaroid white frame
+  const fx = 30, fy = 30, fw = 740, fh = 900;
+  ctx.save();
+  ctx.shadowColor = 'rgba(0,0,0,0.15)';
+  ctx.shadowBlur = 25;
+  ctx.shadowOffsetY = 4;
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(fx, fy, fw, fh);
+  ctx.restore();
+
+  // Photo (upper portion, cropped to fill)
+  if (currentBase64) {
+    await new Promise(resolve => {
+      const img = new Image();
+      img.onload = () => {
+        const px = fx + 20, py = fy + 20, pw = fw - 40, ph = 420;
+        const imgAspect = img.width / img.height;
+        const areaAspect = pw / ph;
+        let sx = 0, sy = 0, sw = img.width, sh = img.height;
+        if (imgAspect > areaAspect) {
+          sw = img.height * areaAspect;
+          sx = (img.width - sw) / 2;
+        } else {
+          sh = img.width / areaAspect;
+          sy = (img.height - sh) / 2;
+        }
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(px, py, pw, ph);
+        ctx.clip();
+        ctx.drawImage(img, sx, sy, sw, sh, px, py, pw, ph);
+        ctx.restore();
+        resolve();
+      };
+      img.onerror = resolve;
+      img.src = `data:image/jpeg;base64,${currentBase64}`;
+    });
+  }
+
+  const textY = fy + 460;
+
+  // Verdict label
+  let verdictLabel;
+  if (marekscore >= 95)      verdictLabel = 'Undeniably Marek.';
+  else if (marekscore >= 70) verdictLabel = "That's him.";
+  else if (marekscore >= 60) verdictLabel = 'Probably Marek.';
+  else if (marekscore >= 30) verdictLabel = 'Close, but no.';
+  else                       verdictLabel = 'Absolutely not Marek.';
+
+  ctx.textAlign = 'center';
+  ctx.font = 'bold 900 48px Georgia, serif';
+  ctx.fillStyle = isMarek ? '#2a7a3b' : '#b83227';
+  ctx.fillText(verdictLabel, canvas.width / 2, textY + 52);
+
+  // Score label
+  ctx.font = '600 13px Arial, sans-serif';
+  ctx.fillStyle = '#8a7f6e';
+  ctx.fillText('MAREKNESS SCORE', canvas.width / 2, textY + 96);
+
+  // Score number
+  const scoreColor = marekscore >= 70 ? '#2a7a3b' : marekscore >= 40 ? '#b87a0a' : '#b83227';
+  ctx.font = 'bold 38px Arial, sans-serif';
+  ctx.fillStyle = scoreColor;
+  ctx.fillText(String(marekscore) + ' / 100', canvas.width / 2, textY + 138);
+
+  // Score bar
+  const barX = fx + 60, barY = textY + 154, barW = fw - 120, barH = 10;
+  ctx.fillStyle = '#ede7db';
+  ctx.beginPath();
+  ctx.roundRect(barX, barY, barW, barH, 5);
+  ctx.fill();
+  ctx.fillStyle = scoreColor;
+  ctx.beginPath();
+  ctx.roundRect(barX, barY, Math.round(barW * marekscore / 100), barH, 5);
+  ctx.fill();
+
+  // Reason panel
+  const panelX = fx + 40, panelY = textY + 182, panelW = fw - 80, panelH = 112;
+  ctx.fillStyle = '#ede7db';
+  ctx.beginPath();
+  ctx.roundRect(panelX, panelY, panelW, panelH, 8);
+  ctx.fill();
+
+  ctx.font = '400 17px Arial, sans-serif';
+  ctx.fillStyle = '#8a7f6e';
+  const words = reason.split(' ');
+  let line = '', lines = [];
+  const maxLineW = panelW - 48;
+  for (const word of words) {
+    const test = line ? line + ' ' + word : word;
+    if (ctx.measureText(test).width > maxLineW && line) { lines.push(line); line = word; }
+    else line = test;
+  }
+  lines.push(line);
+  const lineH = 24;
+  const startY = panelY + (panelH - lines.length * lineH) / 2 + lineH;
+  lines.forEach((l, i) => ctx.fillText(l, canvas.width / 2, startY + i * lineH));
+
+  // Confidence badge
+  const badgeColors = { high: ['#2a7a3b22', '#2a7a3b'], medium: ['#b87a0a22', '#b87a0a'], low: ['#b8322722', '#b83227'] };
+  const [bgCol, fgCol] = badgeColors[confidence] || badgeColors.medium;
+  ctx.font = 'bold 13px Arial, sans-serif';
+  const badgeText = confidence.toUpperCase() + ' CONFIDENCE';
+  const bw = ctx.measureText(badgeText).width + 28;
+  const bx = (canvas.width - bw) / 2, by = panelY + panelH + 20;
+  ctx.fillStyle = bgCol;
+  ctx.beginPath();
+  ctx.roundRect(bx, by, bw, 30, 4);
+  ctx.fill();
+  ctx.fillStyle = fgCol;
+  ctx.fillText(badgeText, canvas.width / 2, by + 20);
+
+  // Branding
+  ctx.font = '400 14px Arial, sans-serif';
+  ctx.fillStyle = '#ccc4b4';
+  ctx.fillText('hbdmarek.netlify.app', canvas.width / 2, fy + fh - 18);
+
+  canvas.toBlob(async blob => {
+    const file = new File([blob], 'marek-verdict.png', { type: 'image/png' });
+    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+      try { await navigator.share({ files: [file], title: verdictLabel }); return; } catch {}
+    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'marek-verdict.png'; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }, 'image/png');
+}
+
+// ─────────────────────────────────────
+// LEADERBOARD
+// ─────────────────────────────────────
+function openLeaderboard() {
+  showScreen('leaderboard-screen');
+  loadLeaderboard();
+}
+
+async function loadLeaderboard() {
+  const table = document.getElementById('lb-table');
+  table.innerHTML = '<div class="lb-row" style="opacity:0.5;justify-content:center;">Loading…</div>';
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/marek_verdicts?select=marekness_score,confidence,created_at&order=marekness_score.desc&limit=10`,
+      { headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` } }
+    );
+    if (!res.ok) throw new Error();
+    const rows = await res.json();
+    if (!rows.length) {
+      table.innerHTML = '<div class="lb-row" style="opacity:0.5;justify-content:center;">No data yet.</div>';
+      return;
+    }
+    table.innerHTML = rows.map((r, i) => {
+      const d = new Date(r.created_at);
+      const date = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      const rank = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1);
+      return `<div class="lb-row">
+        <span class="lb-rank">${rank}</span>
+        <span class="lb-score">${r.marekness_score}</span>
+        <span class="lb-confidence">${r.confidence}</span>
+        <span class="lb-date">${date}</span>
+      </div>`;
+    }).join('');
+  } catch {
+    table.innerHTML = '<div class="lb-row" style="opacity:0.5;justify-content:center;">Failed to load.</div>';
+  }
 }
 
 // ─────────────────────────────────────
