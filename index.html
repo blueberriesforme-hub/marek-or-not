@@ -862,11 +862,13 @@ async function loadScatteredPhotos() {
     const leftPos  = Math.max(-30, sideMargin - photoW - 10);
     const rightPos = Math.max(-30, sideMargin - photoW - 10);
 
+    // Bottom slots listed first so mobile (count=2) shows bottom corners,
+    // avoiding overlap with the title/tagline at the top of the screen.
     const slots = [
+      { bottom: 100, left: leftPos, rot: -11 },
+      { bottom: 80,  right: rightPos, rot: 7 },
       { top: 40,  left: leftPos, rot: 10 },
       { top: 60,  right: rightPos, rot: -8 },
-      { bottom: 100, left: leftPos, rot: -11 },
-      { bottom: 80, right: rightPos, rot: 7 },
       { top: Math.round(vh * 0.42), right: Math.max(-30, rightPos - 15), rot: -6 },
     ];
 
