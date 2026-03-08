@@ -1783,24 +1783,18 @@ async function loadLeaderboard() {
 // ─────────────────────────────────────
 const WS_WORDS = [
   { display: "Warsaw",             word: "WARSAW"           },
-  { display: "Machine Learning",   word: "MACHINELEARNING"  },
   { display: "Cesna",              word: "CESNA"            },
-  { display: "Skiing",             word: "SKIING"           },
   { display: "Tracksuits",         word: "TRACKSUITS"       },
   { display: "Sleepy Tea",         word: "SLEEPYTEA"        },
   { display: "Hamilton",           word: "HAMILTON"         },
   { display: "Cottage Cheese",     word: "COTTAGECHEESE"    },
   { display: "Claudio",            word: "CLAUDIO"          },
   { display: "Real Madrid",        word: "REALMADRID"       },
-  { display: "Tennis",             word: "TENNIS"           },
-  { display: "Greenpoint",         word: "GREENPOINT"       },
   { display: "Flying",             word: "FLYING"           },
   { display: "Senator's Favorite", word: "SENATORSFAVORITE" },
   { display: "Maro",               word: "MARO"             },
   { display: "Oxbridge",           word: "OXBRIDGE"         },
-  { display: "Captain",            word: "CAPTAIN"          },
   { display: "Beloved",            word: "BELOVED"          },
-  { display: "World Citizen",       word: "WORLDCITIZEN"     },
   { display: "Smiley",             word: "SMILEY"           },
   { display: "Aspiring Stylist",   word: "ASPIRINGSTYLIST"  },
   { display: "A Good One",         word: "AGOODONE"         },
@@ -1808,8 +1802,8 @@ const WS_WORDS = [
   { display: "Instagram",          word: "INSTAGRAM"        },
 ];
 
-// All 8 directions: right, down, diagonal↘, diagonal↙, left, up, diagonal↗, diagonal↖
-const WS_DIRS = [[0,1],[1,0],[1,1],[1,-1],[0,-1],[-1,0],[-1,1],[-1,-1]];
+// 4 forward-only directions: right, down, diagonal↘, diagonal↙ (no backwards words)
+const WS_DIRS = [[0,1],[1,0],[1,1],[1,-1]];
 const WS_SIZE = 16;
 const WS_FOUND_BG = [
   'rgba(100,220,130,.38)','rgba(255,180,50,.38)','rgba(120,160,255,.38)',
