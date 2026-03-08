@@ -695,7 +695,6 @@
     <div class="app-title">Marek or Not</div>
   </div>
   <p class="gate-tagline" style="margin-top:-8px;">✨ Another year, another adventure for the one and only, Marek Romanowicz ✨</p>
-  <p id="usage-stat" style="font-size:0.8rem;color:var(--text-muted);margin-top:-4px;"></p>
 
   <button class="who-link" onclick="openWordsearch()">Who is Marek? →</button>
 
@@ -764,6 +763,12 @@
     </div>
 
     <button class="btn btn-secondary" onclick="resetMain()">Check Another Photo</button>
+  </div>
+
+  <!-- Community stats (always visible at bottom) -->
+  <div class="stats-row" style="margin-top:auto;padding-top:24px;">
+    <span class="stats-title">Community Stats</span>
+    <span id="usage-stat" class="stats-text">Loading…</span>
   </div>
 </section>
 
@@ -908,14 +913,18 @@ loadScatteredPhotos();
 async function loadUsageStat() {
   try {
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/marek_verdicts?select=id`,
-      { headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}`, "Prefer": "count=exact", "Range-Unit": "items", "Range": "0-0" } }
+      `${SUPABASE_URL}/rest/v1/marek_verdicts?select=is_marek`,
+      { headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` } }
     );
-    const count = res.headers.get("content-range")?.split("/")?.[1];
-    if (count) {
-      document.getElementById("usage-stat").textContent = `${Number(count).toLocaleString()} photos checked so far`;
-    }
-  } catch { /* silently fail */ }
+    const rows = await res.json();
+    const total = rows.length;
+    const marekCount = rows.filter(r => r.is_marek).length;
+    const notMarekCount = total - marekCount;
+    document.getElementById("usage-stat").textContent =
+      `${total.toLocaleString()} checks · ${marekCount} Marek · ${notMarekCount} not Marek`;
+  } catch {
+    document.getElementById("usage-stat").textContent = "Stats unavailable";
+  }
 }
 loadUsageStat();
 
