@@ -56,7 +56,7 @@
     }
     .screen.active { display: flex; }
 
-    /* ── Scattered background photos (gate screen) ── */
+    /* ── Scattered background photos (desktop margins only) ── */
     #photo-bg {
       position: absolute;
       top: 0; left: 0;
@@ -64,6 +64,37 @@
       pointer-events: none;
       z-index: 2;
       overflow: visible;
+    }
+    @media (max-width: 599px) { #photo-bg { display: none; } }
+
+    /* ── Mobile inline photo strip ── */
+    #mobile-photo-strip {
+      display: none;
+      width: 100%;
+      gap: 14px;
+      overflow-x: auto;
+      padding: 8px 4px 12px;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    #mobile-photo-strip::-webkit-scrollbar { display: none; }
+    @media (max-width: 599px) { #mobile-photo-strip { display: flex; } }
+    .mobile-polaroid {
+      flex-shrink: 0;
+      background: #fff;
+      padding: 8px 8px 26px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.13);
+      width: 110px;
+      opacity: 0;
+      animation: fadeInPhoto 0.5s ease forwards;
+    }
+    .mobile-polaroid img {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      display: block;
     }
     .bg-photo {
       position: absolute;
@@ -834,6 +865,9 @@
     <button class="soft-link" onclick="openLeaderboard()">🏆 Leaderboard</button>
   </div>
 
+  <!-- Mobile photo strip (in-page, between nav and stats) -->
+  <div id="mobile-photo-strip"></div>
+
   <!-- Hidden inputs -->
   <input id="file-input"   type="file" accept="image/*" class="hidden" onchange="handleFile(this.files[0])" />
   <input id="camera-input" type="file" accept="image/*" capture="environment" class="hidden" onchange="handleFile(this.files[0])" />
@@ -884,7 +918,6 @@
     <span class="stats-title">Community Stats</span>
     <span id="usage-stat" class="stats-text">Loading…</span>
   </div>
-  <p class="admin-link" onclick="openAdmin()">admin</p>
 </section>
 
 <!-- ════════════════════════════════════
@@ -989,51 +1022,54 @@ async function loadScatteredPhotos() {
     // Shuffle and pick up to 5
     rows = rows.sort(() => Math.random() - 0.5).slice(0, 5);
 
-    const container = document.getElementById("photo-bg");
     const vw = window.innerWidth;
-    const vh = window.innerHeight;
 
-    // On desktop, place photos in the margin beside the content column.
-    // Content column is max 520px centered, so margin = (vw - 520) / 2.
-    // Photos are 200px wide; we want them to sit just outside the content,
-    // or at least partially visible on narrower screens.
-    const photoW = vw < 600 ? 150 : 200;
-    const contentW = Math.min(520, vw);
-    const sideMargin = (vw - contentW) / 2; // space on each side
-    // Position so photos are fully in the margin when space allows, otherwise peek in
-    // On mobile push photos mostly off-screen (only ~15px sliver visible at edges, never over content)
-    const leftPos  = vw < 600 ? -(photoW - 15) : Math.max(-30, sideMargin - photoW - 10);
-    const rightPos = vw < 600 ? -(photoW - 15) : Math.max(-30, sideMargin - photoW - 10);
-
-    // Bottom slots listed first so mobile (count=2) shows bottom corners,
-    // avoiding overlap with the title/tagline at the top of the screen.
-    const slots = [
-      { bottom: 100, left: leftPos, rot: -11 },
-      { bottom: 80,  right: rightPos, rot: 7 },
-      { top: 40,  left: leftPos, rot: 10 },
-      { top: 60,  right: rightPos, rot: -8 },
-      { top: Math.round(vh * 0.42), right: Math.max(-30, rightPos - 15), rot: -6 },
-    ];
-
-    // On mobile show 2 (corners), on desktop show all
-    const count = vw < 600 ? 2 : rows.length;
-
-    rows.slice(0, count).forEach((r, i) => {
-      const slot = slots[i];
-      const div = document.createElement("div");
-      div.className = "bg-photo";
-      div.style.width = photoW + "px";
-      const rot = `rotate(${slot.rot}deg)`;
-      div.style.setProperty("--rot", rot);
-      div.style.transform = rot;
-      div.style.animationDelay = `${i * 0.15}s`;
-      if (slot.top    !== undefined) div.style.top    = slot.top + "px";
-      if (slot.bottom !== undefined) div.style.bottom = slot.bottom + "px";
-      if (slot.left   !== undefined) div.style.left   = slot.left + "px";
-      if (slot.right  !== undefined) div.style.right  = slot.right + "px";
-      div.innerHTML = `<img src="${r.url}" alt="Marek" loading="lazy" />`;
-      container.appendChild(div);
-    });
+    if (vw < 600) {
+      // Mobile: photos appear inline in the page strip between nav links and stats
+      const strip = document.getElementById("mobile-photo-strip");
+      if (!strip) return;
+      const rots = [-3, 2, -2.5, 3, -1.5];
+      rows.forEach((r, i) => {
+        const div = document.createElement("div");
+        div.className = "mobile-polaroid";
+        div.style.transform = `rotate(${rots[i % rots.length]}deg)`;
+        div.style.animationDelay = `${i * 0.12}s`;
+        div.innerHTML = `<img src="${r.url}" alt="" loading="lazy" />`;
+        strip.appendChild(div);
+      });
+    } else {
+      // Desktop: scattered in the margins beside the content column
+      const container = document.getElementById("photo-bg");
+      const vh = window.innerHeight;
+      const photoW = 200;
+      const contentW = Math.min(520, vw);
+      const sideMargin = (vw - contentW) / 2;
+      const leftPos  = Math.max(-30, sideMargin - photoW - 10);
+      const rightPos = Math.max(-30, sideMargin - photoW - 10);
+      const slots = [
+        { bottom: 100, left: leftPos, rot: -11 },
+        { bottom: 80,  right: rightPos, rot: 7 },
+        { top: 40,  left: leftPos, rot: 10 },
+        { top: 60,  right: rightPos, rot: -8 },
+        { top: Math.round(vh * 0.42), right: Math.max(-30, rightPos - 15), rot: -6 },
+      ];
+      rows.forEach((r, i) => {
+        const slot = slots[i];
+        const div = document.createElement("div");
+        div.className = "bg-photo";
+        div.style.width = photoW + "px";
+        const rot = `rotate(${slot.rot}deg)`;
+        div.style.setProperty("--rot", rot);
+        div.style.transform = rot;
+        div.style.animationDelay = `${i * 0.15}s`;
+        if (slot.top    !== undefined) div.style.top    = slot.top + "px";
+        if (slot.bottom !== undefined) div.style.bottom = slot.bottom + "px";
+        if (slot.left   !== undefined) div.style.left   = slot.left + "px";
+        if (slot.right  !== undefined) div.style.right  = slot.right + "px";
+        div.innerHTML = `<img src="${r.url}" alt="Marek" loading="lazy" />`;
+        container.appendChild(div);
+      });
+    }
   } catch {
     // Silently fail — photos are decorative
   }
@@ -1077,6 +1113,13 @@ function showScreen(id) {
 // GATE
 // ─────────────────────────────────────
 (function initGate() {
+  // Admin shortcut: hbdmarek.netlify.app/#admin
+  if (location.hash === '#admin') {
+    history.replaceState(null, '', location.pathname);
+    showScreen("main-screen");
+    openAdmin();
+    return;
+  }
   showScreen("gate-screen");
   setTimeout(() => {
     const gs = document.getElementById("gate-screen");
