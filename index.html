@@ -759,12 +759,21 @@
       50%       { box-shadow: 0 0 40px rgba(255,215,0,.3); }
     }
     @media (max-width: 600px) {
+      #wordsearch-screen { padding: 16px 10px 40px; gap: 14px; }
       #ws-grid {
-        grid-template-columns: repeat(16, 22px);
-        grid-template-rows: repeat(16, 22px);
+        grid-template-columns: repeat(16, calc((100vw - 44px) / 16));
+        grid-template-rows:    repeat(16, calc((100vw - 44px) / 16));
       }
-      .ws-cell { width: 22px; height: 22px; font-size: 9px; min-width: 28px; min-height: 28px; }
-      .ws-layout { flex-direction: column; }
+      .ws-cell {
+        width: calc((100vw - 44px) / 16);
+        height: calc((100vw - 44px) / 16);
+        font-size: clamp(7px, 2.3vw, 11px);
+        min-width: unset; min-height: unset;
+      }
+      .ws-layout { flex-direction: column; align-items: center; }
+      .ws-panel { width: 100%; }
+      .ws-word-panel { min-width: unset; }
+      #ws-word-list { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 8px; }
     }
 
     /* ── Leaderboard Screen ── */
@@ -852,6 +861,100 @@
       font-size: 0.9rem;
     }
 
+    /* ── Mobile: analyzing-box floats above photo strip ── */
+    @media (max-width: 599px) {
+      #main-screen.is-analyzing .mobile-polaroid { width: 72px; transition: width 0.3s ease; }
+      #main-screen.is-analyzing #mobile-photo-strip { gap: 8px; }
+    }
+
+    /* ── Compliment line (non-Marek) ── */
+    .compliment-line {
+      font-size: 0.88rem;
+      color: var(--text);
+      text-align: center;
+      font-style: italic;
+      padding: 6px 12px;
+      line-height: 1.5;
+    }
+
+    /* ── Post-result Gallery CTA ── */
+    .gallery-cta {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .gallery-cta-label {
+      text-align: center;
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--text-muted);
+    }
+    .gallery-cta-row { display: flex; gap: 10px; }
+    .gallery-cta-btn {
+      flex: 1;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      transition: border-color 0.2s, transform 0.15s, box-shadow 0.15s;
+      font-family: 'Inter', sans-serif;
+    }
+    .gallery-cta-btn:hover { border-color: var(--ink); transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.07); }
+    .gallery-cta-btn:active { transform: scale(0.97); }
+    .gallery-cta-icon { font-size: 1.6rem; line-height: 1; }
+    .gallery-cta-name { font-size: 0.88rem; font-weight: 700; color: var(--text); }
+    .gallery-cta-sub  { font-size: 0.7rem; color: var(--text-muted); }
+
+    /* ── Gallery cross-nav ── */
+    .gallery-cross-nav {
+      font-size: 0.8rem;
+      color: rgba(244,239,230,0.5);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 0;
+    }
+    .gallery-cross-nav button {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 6px;
+      color: #f4efe6;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 6px 14px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .gallery-cross-nav button:hover { background: rgba(255,255,255,0.13); }
+
+    /* Make gallery-score caption text slightly bolder/visible */
+    .gallery-score { font-weight: 600; }
+
+    /* ── Fun Gallery Screen ── */
+    #fun-gallery-screen {
+      background: #0a0804;
+      color: #f4efe6;
+      max-width: 100%;
+      padding: 28px 16px 48px;
+      min-height: 100vh;
+      align-items: center;
+      gap: 24px;
+    }
+
     /* ── Misc ── */
     .divider { width: 100%; height: 1px; background: var(--border); }
     .hidden { display: none !important; }
@@ -912,25 +1015,27 @@
   </div>
 
   <!-- Secondary nav (below tiles, de-emphasised) -->
-  <div style="display:flex;gap:4px;align-items:center;padding-top:4px;">
+  <div style="display:flex;gap:4px;align-items:center;padding-top:4px;flex-wrap:wrap;justify-content:center;">
     <button class="soft-link" onclick="openWordsearch()">Who is Marek?</button>
     <span style="color:var(--border);font-size:0.7rem;">·</span>
     <button class="soft-link" onclick="openLeaderboard()">🏆 Leaderboard</button>
     <span style="color:var(--border);font-size:0.7rem;">·</span>
-    <button class="soft-link" onclick="openGallery()">📸 Gallery</button>
+    <button class="soft-link" onclick="openGallery()">🏛️ Hall of Marek</button>
+    <span style="color:var(--border);font-size:0.7rem;">·</span>
+    <button class="soft-link" onclick="openFunGallery()">🎉 Fun Gallery</button>
   </div>
-
-  <!-- Mobile photo strip (in-page, between nav and stats) -->
-  <div id="mobile-photo-strip"></div>
 
   <!-- Hidden inputs -->
   <input id="file-input" type="file" accept="image/*" class="hidden" onchange="handleFile(this.files[0])" />
 
-  <!-- Analyzing state -->
+  <!-- Analyzing state (placed BEFORE photo strip so on mobile it appears above photos) -->
   <div id="analyzing-box" class="analyzing-box hidden">
     <div class="spinner"></div>
     <p class="analyzing-text">Consulting the Marek oracle…</p>
   </div>
+
+  <!-- Mobile photo strip (in-page, below analyzing box) -->
+  <div id="mobile-photo-strip"></div>
 
   <!-- Result state -->
   <div id="result-box" class="result-box hidden">
@@ -948,13 +1053,30 @@
 
     <p id="result-reason" class="result-reason"></p>
 
+    <!-- Compliment for non-Marek results -->
+    <p id="compliment-line" class="compliment-line hidden"></p>
+
     <span id="confidence-badge" class="confidence-badge"></span>
 
     <!-- Share button -->
     <button class="btn btn-secondary" onclick="shareResult()">Share Result 📤</button>
 
-    <!-- Gallery link (shown only on positive verdict) -->
-    <button id="view-gallery-btn" class="btn btn-secondary hidden" onclick="openGallery()">📸 See the Hall of Marek</button>
+    <!-- Dual gallery CTA (always shown after result) -->
+    <div id="gallery-cta" class="gallery-cta hidden">
+      <p class="gallery-cta-label">✨ Check out the galleries</p>
+      <div class="gallery-cta-row">
+        <button class="gallery-cta-btn" onclick="openGallery()">
+          <span class="gallery-cta-icon">🏛️</span>
+          <span class="gallery-cta-name">Hall of Marek</span>
+          <span class="gallery-cta-sub">Confirmed sightings</span>
+        </button>
+        <button class="gallery-cta-btn" onclick="openFunGallery()">
+          <span class="gallery-cta-icon">🎉</span>
+          <span class="gallery-cta-name">Fun Gallery</span>
+          <span class="gallery-cta-sub">The honourable imposters</span>
+        </button>
+      </div>
+    </div>
 
     <!-- Feedback -->
     <div class="feedback-row">
@@ -1021,10 +1143,32 @@
 ════════════════════════════════════ -->
 <section id="gallery-screen" class="screen">
   <div class="ws-header">
-    <div class="ws-title">📸 Hall of Marek</div>
+    <div class="ws-title">🏛️ Hall of Marek</div>
     <p class="ws-subtitle">Confirmed sightings, immortalised forever</p>
   </div>
+  <div class="gallery-cross-nav">
+    <span>Looking for the wrong ones?</span>
+    <button onclick="openFunGallery()">🎉 Fun Gallery →</button>
+  </div>
   <div id="gallery-grid" class="gallery-grid">
+    <div class="gallery-empty">Loading…</div>
+  </div>
+  <button class="ws-back-btn" onclick="showScreen('main-screen')">← Back to Marek or Not</button>
+</section>
+
+<!-- ════════════════════════════════════
+     FUN GALLERY SCREEN
+════════════════════════════════════ -->
+<section id="fun-gallery-screen" class="screen">
+  <div class="ws-header">
+    <div class="ws-title">🎉 Fun Gallery</div>
+    <p class="ws-subtitle">The honourable imposters — almost Marek, but not quite</p>
+  </div>
+  <div class="gallery-cross-nav">
+    <span>Want the real ones?</span>
+    <button onclick="openGallery()">🏛️ Hall of Marek →</button>
+  </div>
+  <div id="fun-gallery-grid" class="gallery-grid">
     <div class="gallery-empty">Loading…</div>
   </div>
   <button class="ws-back-btn" onclick="showScreen('main-screen')">← Back to Marek or Not</button>
@@ -1175,12 +1319,36 @@ async function loadCommunityStats() {
 loadCommunityStats();
 
 // ─────────────────────────────────────
-// SCREEN MANAGEMENT
+// SCREEN MANAGEMENT + HASH ROUTING
 // ─────────────────────────────────────
-function showScreen(id) {
+const SCREEN_HASH = {
+  'main-screen':        '#home',
+  'wordsearch-screen':  '#wordsearch',
+  'leaderboard-screen': '#leaderboard',
+  'gallery-screen':     '#gallery',
+  'fun-gallery-screen': '#fun-gallery',
+  'admin-screen':       '#admin',
+};
+const HASH_SCREEN = Object.fromEntries(Object.entries(SCREEN_HASH).map(([k,v]) => [v,k]));
+
+function showScreen(id, pushState = true) {
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
   document.getElementById(id).classList.add("active");
+  if (pushState && id !== 'gate-screen') {
+    const hash = SCREEN_HASH[id] || '#home';
+    history.pushState({ screen: id }, '', location.pathname + hash);
+  }
 }
+
+window.addEventListener('popstate', e => {
+  const id = e.state?.screen || HASH_SCREEN[location.hash] || 'main-screen';
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(id)?.classList.add("active");
+  if (id === 'leaderboard-screen') loadLeaderboard();
+  if (id === 'gallery-screen') loadGallery();
+  if (id === 'fun-gallery-screen') loadFunGallery();
+  if (id === 'wordsearch-screen' && !wsBuilt) { wsBuild(); wsBuilt = true; }
+});
 
 // ─────────────────────────────────────
 // GATE
@@ -1188,16 +1356,35 @@ function showScreen(id) {
 (function initGate() {
   // Admin shortcut: hbdmarek.netlify.app/#admin
   if (location.hash === '#admin') {
-    history.replaceState(null, '', location.pathname);
-    showScreen("main-screen");
+    history.replaceState({ screen: 'main-screen' }, '', location.pathname + '#home');
+    document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+    document.getElementById("main-screen").classList.add("active");
     openAdmin();
     return;
   }
-  showScreen("gate-screen");
+  // Deep-link to a specific screen via hash
+  const directScreen = HASH_SCREEN[location.hash];
+  if (directScreen) {
+    history.replaceState({ screen: directScreen }, '', location.hash);
+    document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+    document.getElementById(directScreen)?.classList.add("active");
+    if (directScreen === 'leaderboard-screen') loadLeaderboard();
+    if (directScreen === 'gallery-screen') loadGallery();
+    if (directScreen === 'fun-gallery-screen') loadFunGallery();
+    if (directScreen === 'wordsearch-screen') { wsBuild(); wsBuilt = true; }
+    return;
+  }
+  // Normal: splash then main
+  history.replaceState({ screen: 'gate-screen' }, '', location.pathname);
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById("gate-screen").classList.add("active");
   setTimeout(() => {
-    const gs = document.getElementById("gate-screen");
-    gs.classList.add("fade-out");
-    setTimeout(() => showScreen("main-screen"), 700);
+    document.getElementById("gate-screen").classList.add("fade-out");
+    setTimeout(() => {
+      document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+      document.getElementById("main-screen").classList.add("active");
+      history.replaceState({ screen: 'main-screen' }, '', location.pathname + '#home');
+    }, 700);
   }, 2000);
 })();
 
@@ -1322,6 +1509,11 @@ async function analyzePhoto() {
   document.getElementById("analyzing-box").classList.remove("hidden");
   document.getElementById("result-box").classList.add("hidden");
   document.getElementById("feedback-thanks").classList.add("hidden");
+  // Mobile: shrink photos and scroll analyzing box into view
+  if (window.innerWidth < 600) {
+    document.getElementById("main-screen").classList.add("is-analyzing");
+    setTimeout(() => document.getElementById("analyzing-box").scrollIntoView({ behavior: "smooth", block: "nearest" }), 80);
+  }
 
   try {
     const res = await fetch("/.netlify/functions/identify", {
@@ -1340,9 +1532,25 @@ async function analyzePhoto() {
   }
 }
 
+const NOT_MAREK_COMPLIMENTS = [
+  "But that's a great photo regardless! 📸",
+  "Whoever this is has excellent taste in photos. 🌟",
+  "Not Marek, but clearly a person of great energy. ✨",
+  "The oracle has spoken — though your photo game is flawless. 🎯",
+  "You tried. That's what matters. We're rooting for you. 💪",
+  "Not him, but you've brightened our day regardless. ☀️",
+  "A worthy challenger to the Marek throne. 👑",
+  "Honestly? Still a very memorable submission. 🏅",
+  "You may not have found him, but you've made the oracle smile. 😊",
+  "The search continues — but what a lovely photo along the way. 🌸",
+  "Almost! You clearly have good instincts. 🔍",
+  "We respect the hustle. The gallery disagrees, but we respect it. 🫡",
+];
+
 function showResult({ isMarek, marekscore, confidence, reason }) {
   currentResult = { isMarek, marekscore, confidence, reason };
   document.getElementById("analyzing-box").classList.add("hidden");
+  document.getElementById("main-screen").classList.remove("is-analyzing");
 
   const box = document.getElementById("result-box");
   box.className = "result-box " + (isMarek ? "is-marek" : "not-marek");
@@ -1368,6 +1576,15 @@ function showResult({ isMarek, marekscore, confidence, reason }) {
 
   document.getElementById("result-reason").textContent = `"${reason}"`;
 
+  // Compliment for non-Marek
+  const compEl = document.getElementById("compliment-line");
+  if (!isMarek) {
+    compEl.textContent = NOT_MAREK_COMPLIMENTS[Math.floor(Math.random() * NOT_MAREK_COMPLIMENTS.length)];
+    compEl.classList.remove("hidden");
+  } else {
+    compEl.classList.add("hidden");
+  }
+
   const badge = document.getElementById("confidence-badge");
   badge.className = "confidence-badge " + confidence;
   badge.textContent = confidence + " confidence";
@@ -1375,10 +1592,14 @@ function showResult({ isMarek, marekscore, confidence, reason }) {
   box.classList.remove("hidden");
   loadCommunityStats();
 
-  // Show/hide gallery button + auto-upload on positive verdict
-  document.getElementById('view-gallery-btn').classList.toggle('hidden', !isMarek);
+  // Always show dual gallery CTA after result
+  document.getElementById("gallery-cta").classList.remove("hidden");
+
+  // Auto-upload to appropriate gallery
   if (isMarek && currentBase64) {
     uploadToGallery(currentBase64, currentMediaType, marekscore);
+  } else if (!isMarek && currentBase64) {
+    uploadToFunGallery(currentBase64, currentMediaType, marekscore);
   }
 
   if (isMarek && typeof confetti === 'function') {
@@ -1405,7 +1626,9 @@ function resetMain() {
   document.getElementById("upload-btns").classList.remove("hidden");
   document.getElementById("score-bar").style.width = "0%";
   document.getElementById("roast-line").classList.add("hidden");
-  document.getElementById("view-gallery-btn").classList.add("hidden");
+  document.getElementById("gallery-cta").classList.add("hidden");
+  document.getElementById("compliment-line").classList.add("hidden");
+  document.getElementById("main-screen").classList.remove("is-analyzing");
 }
 
 // ─────────────────────────────────────
@@ -1936,6 +2159,81 @@ async function uploadToGallery(base64, mediaType, marekscore) {
     });
   } catch (err) {
     console.warn('Gallery upload error:', err);
+  }
+}
+
+// ─────────────────────────────────────
+// FUN GALLERY
+// NOTE: Requires a `marek_fun_gallery` table in Supabase with columns:
+//   id (uuid, default gen_random_uuid()), url (text), marekscore (int), created_at (timestamptz, default now())
+//   RLS: allow anonymous insert + select
+// ─────────────────────────────────────
+async function uploadToFunGallery(base64, mediaType, marekscore) {
+  try {
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    const blob = new Blob([bytes], { type: mediaType });
+
+    const ext = mediaType === 'image/png' ? 'png' : 'jpg';
+    const filename = `fun/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+
+    const uploadRes = await fetch(`${SUPABASE_URL}/storage/v1/object/marek-gallery-pub/${filename}`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_ANON,
+        Authorization: `Bearer ${SUPABASE_ANON}`,
+        'Content-Type': mediaType,
+      },
+      body: blob,
+    });
+
+    if (!uploadRes.ok) { console.warn('Fun gallery upload failed:', await uploadRes.text()); return; }
+
+    const url = `${SUPABASE_URL}/storage/v1/object/public/marek-gallery-pub/${filename}`;
+
+    await fetch(`${SUPABASE_URL}/rest/v1/marek_fun_gallery`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_ANON,
+        Authorization: `Bearer ${SUPABASE_ANON}`,
+        'Content-Type': 'application/json',
+        Prefer: 'return=minimal',
+      },
+      body: JSON.stringify({ url, marekscore }),
+    });
+  } catch (err) {
+    console.warn('Fun gallery upload error:', err);
+  }
+}
+
+function openFunGallery() {
+  showScreen('fun-gallery-screen');
+  loadFunGallery();
+}
+
+async function loadFunGallery() {
+  const grid = document.getElementById('fun-gallery-grid');
+  grid.innerHTML = '<div class="gallery-empty">Loading…</div>';
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/marek_fun_gallery?select=url,marekscore,created_at&order=created_at.desc`,
+      { headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` } }
+    );
+    const rows = await res.json();
+    if (!rows.length) {
+      grid.innerHTML = '<div class="gallery-empty">No imposters yet. Be the first to try your luck.</div>';
+      return;
+    }
+    const rots = [-2.5, 1.8, -1.2, 2.2, -3, 1.5, -2, 3, -1.8, 2.5];
+    grid.innerHTML = rows.map((r, i) => `
+      <div class="gallery-item" style="--rot:${rots[i % rots.length]}deg">
+        <img src="${r.url}" alt="Not Marek" loading="lazy" />
+        <div class="gallery-score">${r.marekscore}/100</div>
+      </div>
+    `).join('');
+  } catch {
+    grid.innerHTML = '<div class="gallery-empty">Failed to load gallery.</div>';
   }
 }
 
