@@ -7,6 +7,8 @@ export async function handler(event) {
   }
 
   const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
+  const PERSON_NAME   = process.env.PERSON_NAME   || "Marek R.";
+  const PERSON_TRAITS = process.env.PERSON_TRAITS || "adventurous, loves skiing, flying small planes, traveling";
   if (!ANTHROPIC_API_KEY) {
     return { statusCode: 500, body: JSON.stringify({ error: "Missing API key." }) };
   }
@@ -45,11 +47,11 @@ export async function handler(event) {
               {
                 type: "text",
                 text: `Look at this image. Write ONE short, funny sentence in exactly this format:
-"[Describe what this image actually shows, e.g. 'This image of a tabby cat' or 'This photo of a sunset over the ocean'] is not Marek, but [something Marek R. is probably doing right now that would be more like him — adventurous, outdoorsy, traveling, hiking, skiing, that sort of thing]."
+"[Describe what this image actually shows, e.g. 'This image of a tabby cat' or 'This photo of a sunset over the ocean'] is not ${PERSON_NAME}, but [something ${PERSON_NAME} is probably doing right now that would be more like them — ${PERSON_TRAITS}]."
 
 Examples of the style:
-"This image of a plate of spaghetti is not Marek, but a photo of him free-climbing a cliff face in Croatia would score a solid 94."
-"This photo of a golden retriever is not Marek, but Marek is probably out there somewhere in the Alps right now, so the resemblance is understandable."
+"This image of a plate of spaghetti is not ${PERSON_NAME}, but a photo of them doing something adventurous would score a solid 94."
+"This photo of a golden retriever is not ${PERSON_NAME}, but ${PERSON_NAME} is probably out there right now living their best life, so the resemblance is understandable."
 
 Reply with ONLY the one sentence. No quotes around it, no extra text.`,
               },

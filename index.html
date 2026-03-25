@@ -969,8 +969,8 @@
      GATE SCREEN
 ════════════════════════════════════ -->
 <section id="gate-screen" class="screen active">
-  <div class="gate-splash-title">Another year<br>of Marek.</div>
-  <p class="gate-splash-sub">✨ Happy Birthday Marek ✨</p>
+  <div class="gate-splash-title" id="gate-splash-title">Another year<br>of Marek.</div>
+  <p class="gate-splash-sub" id="gate-splash-sub">✨ Happy Birthday Marek ✨</p>
 </section>
 
 <!-- ════════════════════════════════════
@@ -978,9 +978,9 @@
 ════════════════════════════════════ -->
 <section id="main-screen" class="screen">
   <div class="app-header">
-    <div class="app-title">Marek or Not</div>
+    <div class="app-title" id="app-title-text">Marek or Not</div>
   </div>
-  <p class="gate-tagline" style="margin-top:-8px;">✨ Another year, another adventure for the one and only, Marek Romanowicz ✨</p>
+  <p class="gate-tagline" id="main-tagline" style="margin-top:-8px;">✨ Another year, another adventure for the one and only, Marek Romanowicz ✨</p>
 
   <!-- Drop Zone (hidden until photo selected) -->
   <div id="drop-zone" onclick="triggerFileInput()">
@@ -1104,8 +1104,8 @@
 ════════════════════════════════════ -->
 <section id="wordsearch-screen" class="screen">
   <div class="ws-header">
-    <div class="ws-title">🚀 Happy 34th, Marek! 🛩️</div>
-    <p class="ws-subtitle">just some of the words that make Marek, Marek</p>
+    <div class="ws-title" id="ws-title-el">🚀 Happy 34th, Marek! 🛩️</div>
+    <p class="ws-subtitle" id="ws-subtitle-el">just some of the words that make Marek, Marek</p>
   </div>
   <div class="ws-layout">
     <div class="ws-panel">
@@ -1129,8 +1129,8 @@
 ════════════════════════════════════ -->
 <section id="leaderboard-screen" class="screen">
   <div class="ws-header">
-    <div class="ws-title">🏆 Marekness Leaderboard</div>
-    <p class="ws-subtitle">Top 10 most Marek-looking photos ever submitted</p>
+    <div class="ws-title" id="lb-title-el">🏆 Marekness Leaderboard</div>
+    <p class="ws-subtitle" id="lb-subtitle-el">Top 10 most Marek-looking photos ever submitted</p>
   </div>
   <div id="lb-table" class="lb-table">
     <div class="lb-row" style="opacity:0.5;justify-content:center;">Loading…</div>
@@ -1143,8 +1143,8 @@
 ════════════════════════════════════ -->
 <section id="gallery-screen" class="screen">
   <div class="ws-header">
-    <div class="ws-title">🏛️ Hall of Marek</div>
-    <p class="ws-subtitle">Confirmed sightings, immortalised forever</p>
+    <div class="ws-title" id="gallery-title-el">🏛️ Hall of Marek</div>
+    <p class="ws-subtitle" id="gallery-subtitle-el">Confirmed sightings, immortalised forever</p>
   </div>
   <div class="gallery-cross-nav">
     <span>Looking for the wrong ones?</span>
@@ -1161,8 +1161,8 @@
 ════════════════════════════════════ -->
 <section id="fun-gallery-screen" class="screen">
   <div class="ws-header">
-    <div class="ws-title">🎉 Fun Gallery</div>
-    <p class="ws-subtitle">The honourable imposters — almost Marek, but not quite</p>
+    <div class="ws-title" id="fun-gallery-title-el">🎉 Fun Gallery</div>
+    <p class="ws-subtitle" id="fun-gallery-subtitle-el">The honourable imposters — almost Marek, but not quite</p>
   </div>
   <div class="gallery-cross-nav">
     <span>Want the real ones?</span>
@@ -1214,12 +1214,128 @@
 
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 <script>
-// ─────────────────────────────────────
-// CONFIG
-// ─────────────────────────────────────
-const GATE_PASSWORD  = "hbdmar3k!";
-const SUPABASE_URL   = "https://feskdeuuuhrbordnrypv.supabase.co";
-const SUPABASE_ANON  = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZlc2tkZXV1dWhyYm9yZG5yeXB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5MTY1ODMsImV4cCI6MjA4ODQ5MjU4M30.Tj0uOpyzH1sZ3AwJ5CcOZJuEwhG9ktUfWrbZBDVVO44";
+// ╔═══════════════════════════════════════════════════════╗
+// ║  CONFIG — edit this block to create a new site        ║
+// ╚═══════════════════════════════════════════════════════╝
+const CONFIG = {
+  // ── Person ───────────────────────────────────────────
+  name:     "Marek",             // short first name, used in score/verdict text
+  fullName: "Marek Romanowicz",  // used in tagline
+  age:      34,
+
+  // traits go into the AI prompts — also set PERSON_NAME and PERSON_TRAITS
+  // in your Netlify environment variables (Settings → Environment variables)
+  traits: "adventurous, loves skiing, flying small planes, traveling, cottage cheese",
+
+  // ── Gate ─────────────────────────────────────────────
+  gatePassword: "hbdmar3k!",
+  gateTitle:    "Another year\nof Marek.",   // \n becomes a line break
+  gateSub:      "✨ Happy Birthday Marek ✨",
+
+  // ── Main screen ──────────────────────────────────────
+  appTitle: "Marek or Not",
+  tagline:  "✨ Another year, another adventure for the one and only, Marek Romanowicz ✨",
+
+  // ── Galleries ────────────────────────────────────────
+  hallTitle:    "🏛️ Hall of Marek",
+  hallSubtitle: "Confirmed sightings, immortalised forever",
+  funTitle:     "🎉 Fun Gallery",
+  funSubtitle:  "The honourable imposters — almost Marek, but not quite",
+
+  // ── Leaderboard ──────────────────────────────────────
+  lbTitle:    "🏆 Marekness Leaderboard",
+  lbSubtitle: "Top 10 most Marek-looking photos ever submitted",
+
+  // ── Word search ──────────────────────────────────────
+  wsTitle:    "🚀 Happy 34th, Marek! 🛩️",
+  wsSubtitle: "just some of the words that make Marek, Marek",
+  wsCongrats: "🎉 Mission complete, Captain! All words found!\nHappy 34th, Marek! 🌌",
+  wsWords: [
+    { display: "Warsaw",             word: "WARSAW"           },
+    { display: "Cesna",              word: "CESNA"            },
+    { display: "Tracksuits",         word: "TRACKSUITS"       },
+    { display: "Sleepy Tea",         word: "SLEEPYTEA"        },
+    { display: "Hamilton",           word: "HAMILTON"         },
+    { display: "Cottage Cheese",     word: "COTTAGECHEESE"    },
+    { display: "Claudio",            word: "CLAUDIO"          },
+    { display: "Real Madrid",        word: "REALMADRID"       },
+    { display: "Flying",             word: "FLYING"           },
+    { display: "Senator's Favorite", word: "SENATORSFAVORITE" },
+    { display: "Maro",               word: "MARO"             },
+    { display: "Oxbridge",           word: "OXBRIDGE"         },
+    { display: "Beloved",            word: "BELOVED"          },
+    { display: "Smiley",             word: "SMILEY"           },
+    { display: "Aspiring Stylist",   word: "ASPIRINGSTYLIST"  },
+    { display: "A Good One",         word: "AGOODONE"         },
+    { display: "Patagonia",          word: "PATAGONIA"        },
+    { display: "Instagram",          word: "INSTAGRAM"        },
+  ],
+
+  // ── Compliments shown after a non-match ──────────────
+  compliments: [
+    "But that's a great photo regardless! 📸",
+    "Whoever this is has excellent taste in photos. 🌟",
+    "Not Marek, but clearly a person of great energy. ✨",
+    "The oracle has spoken — though your photo game is flawless. 🎯",
+    "You tried. That's what matters. We're rooting for you. 💪",
+    "Not him, but you've brightened our day regardless. ☀️",
+    "A worthy challenger to the Marek throne. 👑",
+    "Honestly? Still a very memorable submission. 🏅",
+    "You may not have found him, but you've made the oracle smile. 😊",
+    "The search continues — but what a lovely photo along the way. 🌸",
+    "Almost! You clearly have good instincts. 🔍",
+    "We respect the hustle. The gallery disagrees, but we respect it. 🫡",
+  ],
+
+  // ── Supabase — use a NEW project per person ──────────
+  supabaseUrl:  "https://feskdeuuuhrbordnrypv.supabase.co",
+  supabaseAnon: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZlc2tkZXV1dWhyYm9yZG5yeXB2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5MTY1ODMsImV4cCI6MjA4ODQ5MjU4M30.Tj0uOpyzH1sZ3AwJ5CcOZJuEwhG9ktUfWrbZBDVVO44",
+};
+// ════════════════════════════════════════════════════════
+
+// Derived constants — no need to touch these
+const GATE_PASSWORD = CONFIG.gatePassword;
+const SUPABASE_URL  = CONFIG.supabaseUrl;
+const SUPABASE_ANON = CONFIG.supabaseAnon;
+
+// Apply config values to DOM text
+function applyConfig() {
+  document.title = `${CONFIG.appTitle} — Happy ${CONFIG.age}th, ${CONFIG.name}!`;
+
+  // Gate screen
+  document.getElementById('gate-splash-title').innerHTML = CONFIG.gateTitle.replace('\n', '<br>');
+  document.getElementById('gate-splash-sub').textContent = CONFIG.gateSub;
+
+  // Main screen
+  document.getElementById('app-title-text').textContent = CONFIG.appTitle;
+  document.getElementById('main-tagline').textContent   = CONFIG.tagline;
+
+  // Score label
+  const sl = document.querySelector('.score-label');
+  if (sl) sl.textContent = `${CONFIG.name}ness Score`;
+
+  // Word search
+  document.getElementById('ws-title-el').textContent    = CONFIG.wsTitle;
+  document.getElementById('ws-subtitle-el').textContent = CONFIG.wsSubtitle;
+
+  // Leaderboard
+  document.getElementById('lb-title-el').textContent    = CONFIG.lbTitle;
+  document.getElementById('lb-subtitle-el').textContent = CONFIG.lbSubtitle;
+
+  // Gallery
+  document.getElementById('gallery-title-el').textContent    = CONFIG.hallTitle;
+  document.getElementById('gallery-subtitle-el').textContent = CONFIG.hallSubtitle;
+
+  // Fun gallery
+  document.getElementById('fun-gallery-title-el').textContent    = CONFIG.funTitle;
+  document.getElementById('fun-gallery-subtitle-el').textContent = CONFIG.funSubtitle;
+
+  // Back buttons
+  document.querySelectorAll('.ws-back-btn').forEach(btn => {
+    btn.textContent = `← Back to ${CONFIG.appTitle}`;
+  });
+}
+applyConfig();
 
 // ─────────────────────────────────────
 // SCATTERED BACKGROUND PHOTOS
@@ -1495,13 +1611,13 @@ async function analyzePhoto() {
   if (!currentBase64) return;
 
   const LOADING_MSGS = [
-    "Consulting the Marek oracle…",
+    `Consulting the ${CONFIG.name} oracle…`,
     "Running facial analysis…",
-    "Cross-referencing with known Marek sightings…",
+    `Cross-referencing with known ${CONFIG.name} sightings…`,
     "Checking cheekbone database…",
     "Analyzing jawline topology…",
-    "Scanning for Marek-specific features…",
-    "Comparing against Warsaw records…",
+    "Scanning for distinctive features…",
+    "Comparing against reference photos…",
   ];
   document.querySelector(".analyzing-text").textContent =
     LOADING_MSGS[Math.floor(Math.random() * LOADING_MSGS.length)];
@@ -1532,20 +1648,7 @@ async function analyzePhoto() {
   }
 }
 
-const NOT_MAREK_COMPLIMENTS = [
-  "But that's a great photo regardless! 📸",
-  "Whoever this is has excellent taste in photos. 🌟",
-  "Not Marek, but clearly a person of great energy. ✨",
-  "The oracle has spoken — though your photo game is flawless. 🎯",
-  "You tried. That's what matters. We're rooting for you. 💪",
-  "Not him, but you've brightened our day regardless. ☀️",
-  "A worthy challenger to the Marek throne. 👑",
-  "Honestly? Still a very memorable submission. 🏅",
-  "You may not have found him, but you've made the oracle smile. 😊",
-  "The search continues — but what a lovely photo along the way. 🌸",
-  "Almost! You clearly have good instincts. 🔍",
-  "We respect the hustle. The gallery disagrees, but we respect it. 🫡",
-];
+const NOT_MAREK_COMPLIMENTS = CONFIG.compliments;
 
 function showResult({ isMarek, marekscore, confidence, reason }) {
   currentResult = { isMarek, marekscore, confidence, reason };
@@ -1557,11 +1660,11 @@ function showResult({ isMarek, marekscore, confidence, reason }) {
 
   const vt = document.getElementById("verdict-text");
   vt.className = "verdict-text " + (isMarek ? "is-marek" : "not-marek");
-  if (marekscore >= 95)      vt.textContent = "Undeniably Marek.";
+  if (marekscore >= 95)      vt.textContent = `Undeniably ${CONFIG.name}.`;
   else if (marekscore >= 70) vt.textContent = "That's him.";
-  else if (marekscore >= 60) vt.textContent = "Probably Marek.";
+  else if (marekscore >= 60) vt.textContent = `Probably ${CONFIG.name}.`;
   else if (marekscore >= 30) vt.textContent = "Close, but no.";
-  else                       vt.textContent = "Absolutely not Marek.";
+  else                       vt.textContent = `Absolutely not ${CONFIG.name}.`;
 
   const scoreClass = marekscore >= 70 ? "high" : marekscore >= 40 ? "mid" : "low";
   const sn = document.getElementById("score-number");
@@ -1966,11 +2069,11 @@ async function shareResult() {
 
   // Verdict label
   let verdictLabel;
-  if (marekscore >= 95)      verdictLabel = 'Undeniably Marek.';
+  if (marekscore >= 95)      verdictLabel = `Undeniably ${CONFIG.name}.`;
   else if (marekscore >= 70) verdictLabel = "That's him.";
-  else if (marekscore >= 60) verdictLabel = 'Probably Marek.';
+  else if (marekscore >= 60) verdictLabel = `Probably ${CONFIG.name}.`;
   else if (marekscore >= 30) verdictLabel = 'Close, but no.';
-  else                       verdictLabel = 'Absolutely not Marek.';
+  else                       verdictLabel = `Absolutely not ${CONFIG.name}.`;
 
   ctx.textAlign = 'center';
   ctx.font = 'bold 900 48px Georgia, serif';
@@ -2240,26 +2343,7 @@ async function loadFunGallery() {
 // ─────────────────────────────────────
 // WORD SEARCH
 // ─────────────────────────────────────
-const WS_WORDS = [
-  { display: "Warsaw",             word: "WARSAW"           },
-  { display: "Cesna",              word: "CESNA"            },
-  { display: "Tracksuits",         word: "TRACKSUITS"       },
-  { display: "Sleepy Tea",         word: "SLEEPYTEA"        },
-  { display: "Hamilton",           word: "HAMILTON"         },
-  { display: "Cottage Cheese",     word: "COTTAGECHEESE"    },
-  { display: "Claudio",            word: "CLAUDIO"          },
-  { display: "Real Madrid",        word: "REALMADRID"       },
-  { display: "Flying",             word: "FLYING"           },
-  { display: "Senator's Favorite", word: "SENATORSFAVORITE" },
-  { display: "Maro",               word: "MARO"             },
-  { display: "Oxbridge",           word: "OXBRIDGE"         },
-  { display: "Beloved",            word: "BELOVED"          },
-  { display: "Smiley",             word: "SMILEY"           },
-  { display: "Aspiring Stylist",   word: "ASPIRINGSTYLIST"  },
-  { display: "A Good One",         word: "AGOODONE"         },
-  { display: "Patagonia",          word: "PATAGONIA"        },
-  { display: "Instagram",          word: "INSTAGRAM"        },
-];
+const WS_WORDS = CONFIG.wsWords;
 
 // 4 forward-only directions: right, down, diagonal↘, diagonal↙ (no backwards words)
 const WS_DIRS = [[0,1],[1,0],[1,1],[1,-1]];
@@ -2355,7 +2439,11 @@ function wsUpdateProgress() {
   const found = wsFoundWords.size, total = WS_WORDS.length;
   document.getElementById('ws-progress-fill').style.width = (found/total*100)+'%';
   document.getElementById('ws-progress-text').textContent = `${found} / ${total} found`;
-  if (found===total) document.getElementById('ws-congrats').style.display='block';
+  if (found===total) {
+    const cg = document.getElementById('ws-congrats');
+    cg.innerHTML = CONFIG.wsCongrats.replace('\n', '<br>');
+    cg.style.display = 'block';
+  }
 }
 
 function wsLineCells(a, b) {

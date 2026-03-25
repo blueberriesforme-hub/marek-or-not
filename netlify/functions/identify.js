@@ -12,6 +12,8 @@ export async function handler(event) {
   const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
   const SUPABASE_URL = process.env.SUPABASE_URL;
   const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
+  const PERSON_NAME   = process.env.PERSON_NAME   || "Marek R.";
+  const PERSON_TRAITS = process.env.PERSON_TRAITS || "adventurous, loves skiing, flying small planes, traveling, cottage cheese";
 
   if (!ANTHROPIC_API_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
     return {
@@ -93,7 +95,7 @@ export async function handler(event) {
     if (referenceUrls.length > 0) {
       contentBlocks.push({
         type: "text",
-        text: `These are reference photos of the person named Marek R. Study his facial features carefully — jawline, eye spacing, nose shape, cheekbones, and any distinctive characteristics. There are ${referenceUrls.length} reference photo(s):`,
+        text: `These are reference photos of the person named ${PERSON_NAME}. Study their facial features carefully — jawline, eye spacing, nose shape, cheekbones, and any distinctive characteristics. There are ${referenceUrls.length} reference photo(s):`,
       });
       for (const url of referenceUrls) {
         contentBlocks.push({
@@ -110,7 +112,7 @@ export async function handler(event) {
 
     contentBlocks.push({
       type: "text",
-      text: `Now examine this test photo and compare it to the reference photos above. Respond ONLY with a JSON object — no markdown, no explanation, just raw JSON:\n{\n  "marekscore": <integer 0-100>,\n  "isMarek": <boolean — true if marekscore >= 60>,\n  "confidence": "<high|medium|low>",\n  "reason": "<one concise sentence about the facial features you observe — do NOT mention 'reference photos', 'reference images', 'hairline', or 'receding hairline', just describe what you see>"\n}\n\nScoring guide: 100 = definitely Marek, 0 = definitely not Marek, 50–65 = could be a close relative or sibling. Base your score purely on facial feature similarity. If there is no visible face, return marekscore 0 with low confidence.`,
+      text: `Now examine this test photo and compare it to the reference photos above. Respond ONLY with a JSON object — no markdown, no explanation, just raw JSON:\n{\n  "marekscore": <integer 0-100>,\n  "isMarek": <boolean — true if marekscore >= 60>,\n  "confidence": "<high|medium|low>",\n  "reason": "<one concise sentence about the facial features you observe — do NOT mention 'reference photos', 'reference images', 'hairline', or 'receding hairline', just describe what you see>"\n}\n\nScoring guide: 100 = definitely ${PERSON_NAME}, 0 = definitely not ${PERSON_NAME}, 50–65 = could be a close relative or sibling. Base your score purely on facial feature similarity. If there is no visible face, return marekscore 0 with low confidence.`,
     });
 
     contentBlocks.push({
